@@ -15,7 +15,7 @@ describe Task do
   end
 
   before(:each) do
-    @context = Context.new({}, {})
+    @context = Context.new
   end
 
   describe "#ready?" do

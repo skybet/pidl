@@ -11,7 +11,7 @@ describe Pipeline do
   end
 
   before(:each) do
-    @context = Context.new({"job.prefix" => "maximus"}, {})
+    @context = Context.new
   end
 
   describe "@tasks" do

@@ -354,18 +354,6 @@ module Pidl
       @logger
     end
 
-    # Retrieve the value of the specified
-    # config key, or nil if it does not exist
-    def config key
-      @context.config key 
-    end
-
-    # Retrieve the value of the given
-    # schema key, or nil if it does not exist
-    def schema key
-      @context.schema key 
-    end
-
     # Store a value with the given key in
     # the internal context
     def store key, value

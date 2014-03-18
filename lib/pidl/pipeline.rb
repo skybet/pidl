@@ -12,10 +12,6 @@ module Pidl
       @tasks = {}
 
       # Sort out the job name
-      job_prefix = context.config("job.prefix")
-      if not job_prefix.nil? and not job_prefix.empty?
-        name = "#{job_prefix}.#{name}"
-      end
       context.store :job_name, name.to_s
 
       super
