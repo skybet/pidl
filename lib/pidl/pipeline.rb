@@ -6,7 +6,8 @@ module Pidl
 
   class Pipeline < PidlBase
 
-    def initialize(name, context, flags = {}, &block)
+    def initialize(name, context, flags = nil, &block)
+      flags = flags || {}
       @run_one = flags[:run_one]
       @single_thread = flags[:single_thread] or false
       @tasks = {}

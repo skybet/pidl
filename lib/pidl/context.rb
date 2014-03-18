@@ -7,8 +7,12 @@ module Pidl
   # exposing a shared key/value store.
   class Context
 
+    attr_reader :params
+
     # Create a new, empty key/value store
-    def initialize()
+    def initialize(flags = nil)
+      flags ||= {}
+      @params = flags[:params] || []
       @context = {}
       @mutex = Mutex.new
     end
