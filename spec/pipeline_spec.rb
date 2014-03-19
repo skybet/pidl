@@ -1,5 +1,7 @@
 require 'pidl'
 require 'base_behaviour'
+require 'date'
+require 'timecop'
 
 include Pidl
 
@@ -26,6 +28,17 @@ describe Pipeline do
     it "returns the job name via all" do
       i = pipeline do; end
       i.all[:job_name].should eq('name_of_job')
+    end
+
+  end
+
+  describe "run date" do
+
+    it "returns the datetime of the start of the test run" do
+      Timecop.freeze(DateTime.parse "2014-03-18T14:31:23+00:00")
+      i = pipeline do; end
+      i.get(:run_date).iso8601.should eq("2014-03-18T14:31:23+00:00")
+      Timecop.return
     end
 
   end
@@ -75,7 +88,7 @@ describe Pipeline do
       end.to raise_error(NoMethodError)
     end
 
-    it "returns a task blessed with the provided action if one is specified" do
+    it "returns a task blessed with the provided action" do
       p = pipeline actions: { customaction: Action } do
         task :mytask do
           customaction do; end
@@ -85,6 +98,18 @@ describe Pipeline do
       t = p.tasks[:mytask]
       a = t.actions[0]
       a.name.should eq('mytask.customaction')
+    end
+
+    it "returns a task blessed with the provided action with a given name" do
+      p = pipeline actions: { customaction: Action } do
+        task :mytask do
+          customaction "this is a custom name" do; end
+        end
+      end
+      p.tasks.size.should eq(1)
+      t = p.tasks[:mytask]
+      a = t.actions[0]
+      a.name.should eq('this is a custom name')
     end
 
   end

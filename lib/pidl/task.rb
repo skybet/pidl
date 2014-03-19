@@ -4,9 +4,10 @@ module Pidl
 
   class Task < PidlBase
 
-    def self.action(name, type)
-      send :define_method, name do |&block|
-        a = type.new("#{@name}.#{name}", @context, &block)
+    def self.action(action_sym, type)
+      send :define_method, action_sym do |name = nil, &block|
+        name ||= "#{@name}.#{action_sym}"
+        a = type.new(name, @context, &block)
         add_action a
       end
     end

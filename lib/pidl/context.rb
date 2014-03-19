@@ -12,6 +12,8 @@ module Pidl
       flags ||= {}
       @context = {}
       @mutex = Mutex.new
+      @logger = flags[:logger] || FakeLogger.new
+      flags.delete :logger
 
       # Create custom accessors for the flags
       flags.each { |name, value|
@@ -24,6 +26,7 @@ module Pidl
     # KeyError if it cannot be found.
     def set key, value
       @mutex.synchronize {
+        logger.debug "Setting #{key} => #{value}"
         @context[key] = value
       }
     end
@@ -32,11 +35,13 @@ module Pidl
     # context hash, or raise a
     # KeyError if it cannot be found.
     def get key
+      logger.debug "Promising key [#{key}]"
       return Lazy::promise do
         @mutex.synchronize do
           if @context[key].nil?
-            raise KeyError.new("Key #{key} not found in context")
+            raise KeyError.new("Key [#{key}] not found in context")
           end
+          logger.debug "Evaluated [#{key}] as [#{@context[key]}]"
           @context[key]
         end
       end
@@ -48,12 +53,17 @@ module Pidl
       @context
     end
 
+    # Get the logger
+    def logger
+      @logger
+    end
 
     private
 
     def create_accessor_method name, value
       var_name = "@#{name}".to_sym
       instance_variable_set var_name, value 
+      logger.debug { "Creating #{value.class.name} accessor [#{name}] for value [#{value}]" }
       if value.is_a? Hash
         define_singleton_method name do |key|
           v = instance_variable_get var_name

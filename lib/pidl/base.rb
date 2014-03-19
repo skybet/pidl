@@ -258,7 +258,7 @@ module Pidl
     def initialize(name, context, flags = {}, &block)
       @name = name
       @context = context
-      @logger = flags['logger'] || FakeLogger.new
+      @logger = flags[:logger] || FakeLogger.new
       instance_eval(&block)
     end
 

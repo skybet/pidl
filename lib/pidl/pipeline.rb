@@ -1,4 +1,5 @@
 require 'lazy'
+require 'date'
 require_relative 'base'
 require_relative 'task'
 
@@ -6,14 +7,17 @@ module Pidl
 
   class Pipeline < PidlBase
 
+    attr_reader :tasks
+
     def initialize(name, context, flags = nil, &block)
       flags = flags || {}
       @run_one = flags[:run_one]
       @single_thread = flags[:single_thread] or false
       @tasks = {}
 
-      # Sort out the job name
+      # Sort out the job name and date
       context.set :job_name, name.to_s
+      context.set :run_date, ::DateTime.now
 
       # Create out inner task type
       @tasktype = Class.new(Task) do
@@ -32,10 +36,6 @@ module Pidl
       end
       logger.debug "Created task [#{name}]"
       @tasks[name] = @tasktype.new(name, @context, &block)
-    end
-
-    def tasks
-      @tasks
     end
 
     def add_task task
@@ -57,10 +57,11 @@ module Pidl
       else
         plan = explain
         plan.each do |group|
-          logger.debug "Running task group [#{group}]"
           if @single_thread
+            logger.debug "Running task group [#{group}] consecutively"
             run_group_series group
           else
+            logger.debug "Running task group [#{group}] concurrently"
             run_group_and_wait group
           end
         end
