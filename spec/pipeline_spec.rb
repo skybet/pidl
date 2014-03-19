@@ -1,8 +1,10 @@
 require 'pidl'
+require 'base_behaviour'
 
 include Pidl
 
 describe Pipeline do
+  it_behaves_like "PidlBase"
 
   @context = nil
 
@@ -43,6 +45,32 @@ describe Pipeline do
           end
         end
       end.to raise_error(ArgumentError)
+    end
+
+  end
+
+  describe "custom actions" do
+
+    it "returns a vanilla task if no custom actions are specified" do
+      expect do
+      p = pipeline do
+        task :mytask do
+          customaction :name
+        end
+      end
+      end.to raise_error(NoMethodError)
+    end
+
+    it "returns a task blessed with the provided action if one is specified" do
+      p = pipeline actions: { customaction: Action } do
+        task :mytask do
+          customaction do; end
+        end
+      end
+      p.tasks.size.should eq(1)
+      t = p.tasks[:mytask]
+      a = t.actions[0]
+      a.name.should eq('mytask.customaction')
     end
 
   end

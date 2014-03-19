@@ -11,21 +11,27 @@ module Pidl
       end
     end
 
-    vargsetter :after
+    def after *args
+      @after = args
+    end
 
     def initialize(name, context, flags = {}, &block)
-      @cmds = []
+      @actions = []
       super
     end
 
     def run
-      @cmds.each do |cmd|
-        cmd.run
+      @actions.each do |action|
+        action.run
       end
     end
 
+    def actions
+      @actions
+    end
+
     def add_action(a)
-      @cmds << a
+      @actions << a
       a
     end
 
@@ -44,8 +50,8 @@ module Pidl
 
     def dump
       puts "    #{self}"
-      @cmds.each do |cmd|
-        puts "        #{cmd.to_s}"
+      @actions.each do |action|
+        puts "        #{action.to_s}"
       end
     end
 

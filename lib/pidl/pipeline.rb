@@ -15,6 +15,14 @@ module Pidl
       # Sort out the job name
       context.store :job_name, name.to_s
 
+      # Create out inner task type
+      @tasktype = Class.new(Task) do
+        actions = flags[:actions] || {}
+        actions.each { |name, type|
+          action name, type
+        }
+      end
+
       super
     end
 
@@ -23,7 +31,7 @@ module Pidl
         raise ArgumentError.new "Type #{name} already exists"
       end
       logger.debug "Created task [#{name}]"
-      @tasks[name] = Task.new(name, @context, &block)
+      @tasks[name] = @tasktype.new(name, @context, &block)
     end
 
     def tasks

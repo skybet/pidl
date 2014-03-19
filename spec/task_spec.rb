@@ -1,8 +1,10 @@
 require 'pidl'
+require 'base_behaviour'
 
 include Pidl
 
 describe Task do
+  it_behaves_like "PidlBase"
 
   @context = nil
 
