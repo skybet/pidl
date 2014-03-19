@@ -12,8 +12,9 @@ describe Task do
     return Task.new :name, @context, &block
   end
 
-  def action &block
-    return Action.new :actionname, @context, &block
+  def action(name=nil, &block)
+    name ||= :actionname
+    return Action.new name, @context, &block
   end
 
   before(:each) do
@@ -100,6 +101,73 @@ describe Task do
         end
       end
       t.run
+    end
+
+  end
+
+  context "action error" do
+
+    context "on_error :raise" do
+
+      it "aborts all remaining actions and raises error" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :raise })
+        b = t.add_action(action(:action_b) { on_error :raise })
+        c = t.add_action(action(:action_c) { on_error :raise })
+
+        expect(a).to receive(:run) do
+          expect(b).to receive(:run).and_raise(RuntimeError.new "Test error") do
+            expect(c).not_to receive(:run)
+          end
+        end
+
+        expect do
+          t.run
+        end.to raise_error(RuntimeError)
+      end
+
+    end
+
+    context "on_error :exit" do
+      it "aborts all remaining actions and sets exit? flag" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :exit })
+        b = t.add_action(action(:action_b) { on_error :exit })
+        c = t.add_action(action(:action_c) { on_error :exit })
+
+        expect(a).to receive(:run) do
+          expect(b).to receive(:run).and_raise(RuntimeError.new "Test error") do
+            expect(c).not_to receive(:run)
+          end
+        end
+
+        expect do
+          t.run
+        end.not_to raise_error
+
+        t.exit?.should eq(true)
+      end
+    end
+
+    context "on_error :continue" do
+      it "runs all remaining actions and does not set exit? flag" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :continue })
+        b = t.add_action(action(:action_b) { on_error :continue })
+        c = t.add_action(action(:action_c) { on_error :continue })
+
+        expect(a).to receive(:run) do
+          expect(b).to receive(:run).and_raise(RuntimeError.new "Test error") do
+            expect(c).to receive(:run)
+          end
+        end
+
+        expect do
+          t.run
+        end.not_to raise_error
+
+        t.exit?.should eq(false)
+      end
     end
 
   end

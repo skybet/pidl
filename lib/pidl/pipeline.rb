@@ -13,19 +13,12 @@ module Pidl
       flags = flags || {}
       @run_one = flags[:run_one]
       @single_thread = flags[:single_thread] or false
+      @actions = flags[:actions] || {}
       @tasks = {}
 
       # Sort out the job name and date
       context.set :job_name, name.to_s
       context.set :run_date, ::DateTime.now
-
-      # Create out inner task type
-      @tasktype = Class.new(Task) do
-        actions = flags[:actions] || {}
-        actions.each { |name, type|
-          action name, type
-        }
-      end
 
       super
     end
@@ -35,7 +28,7 @@ module Pidl
         raise ArgumentError.new "Type #{name} already exists"
       end
       logger.debug "Created task [#{name}]"
-      @tasks[name] = @tasktype.new(name, @context, &block)
+      @tasks[name] = create_task(name, @context, @actions, &block)
     end
 
     def add_task task
@@ -63,6 +56,10 @@ module Pidl
           else
             logger.debug "Running task group [#{group}] concurrently"
             run_group_and_wait group
+          end
+          if group.reduce(false) { |r, t| r || @tasks[t].exit? }
+            logger.debug "At least one task requested exit. Terminating now."
+            break
           end
         end
       end
@@ -108,6 +105,15 @@ module Pidl
     end
 
     private
+
+    def create_task name, context, actions, &block
+      Task.new name, context do
+        actions.each { |name, type|
+          add_custom_action name, type
+        }
+        instance_eval &block
+      end
+    end
 
     def run_group_series group
       group.each do |t|

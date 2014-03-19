@@ -316,6 +316,57 @@ describe Pipeline do
       p.run
     end
 
+    it "runs all tasks if non exit" do
+      p = get_pipeline
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      t2 = task :secondtask do
+        after :firsttask
+      end
+      p.add_task(t2)
+
+      t3 = task :thirdtask do
+        after :secondtask
+      end
+      p.add_task(t3)
+
+      expect(t1).to receive(:run) do
+        expect(t2).to receive(:run) do
+          expect(t3).to receive(:run)
+        end
+      end
+      p.run
+    end
+
+    it "does not run remaining tasks if one exits" do
+      p = get_pipeline
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      t2 = task :secondtask do
+        after :firsttask
+      end
+      p.add_task(t2)
+      expect(t2).to receive(:exit?).and_return(true)
+
+      t3 = task :thirdtask do
+        after :secondtask
+      end
+      p.add_task(t3)
+
+      expect(t1).to receive(:run) do
+        expect(t2).to receive(:run) do
+          expect(t3).not_to receive(:run)
+        end
+      end
+      p.run
+    end
+
     ## Sample only - uncomment to watch
     # multi-threaded dispatch working
     #

@@ -86,6 +86,7 @@ module Pidl
     end
 
     def initialize(name, context, flags = {}, &block)
+      @on_error = :raise
       super
       validate
     end
@@ -101,8 +102,23 @@ module Pidl
     def run
     end
 
+    def on_error v
+      if not [:raise, :exit, :continue].include? v
+        raise RuntimeError.new "Error response [#{v}] is invalid"
+      end
+      @on_error = v
+    end
+
     def dump
       puts "        #{self}"
+    end
+
+    def raise_on_error?
+      @on_error == :raise
+    end
+
+    def exit_on_error?
+      @on_error == :exit
     end
 
     private
