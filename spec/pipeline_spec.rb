@@ -9,11 +9,25 @@ describe Pipeline do
   @context = nil
 
   def pipeline options={}, &block
-    return Pipeline.new :name, @context, options, &block
+    return Pipeline.new :name_of_job, @context, options, &block
   end
 
   before(:each) do
     @context = Context.new
+  end
+
+  describe "job name" do
+
+    it "returns the job name via get" do
+      i = pipeline do; end
+      i.get(:job_name).should eq('name_of_job')
+    end
+
+    it "returns the job name via all" do
+      i = pipeline do; end
+      i.all[:job_name].should eq('name_of_job')
+    end
+
   end
 
   describe "@tasks" do

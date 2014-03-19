@@ -1,9 +1,16 @@
 require 'logger'
+require 'context_behaviour'
 
 shared_examples_for "PidlBase" do
+  it_behaves_like "Context"
 
   def instance options={}, &block
-    return described_class.new :name, @context, options, &block
+    described_class.new :name_of_instance, @context, options, &block
+  end
+
+  def context_instance *args
+    context = Context.send :new, *args
+    described_class.new :name_of_instance, context do; end
   end
 
   before(:each) do
@@ -14,7 +21,7 @@ shared_examples_for "PidlBase" do
 
     it "returns the specified name" do
       i = instance do; end
-      i.name.should eq(:name)
+      i.name.should eq(:name_of_instance)
     end
 
   end
@@ -25,29 +32,6 @@ shared_examples_for "PidlBase" do
       i = instance do; end
       l = i.logger
       l.is_a?(Logger).should eq(true)
-    end
-
-  end
-
-  describe "context" do
-
-    it "returns a set named value" do
-      c = Context.new
-      c.set :mykey, "myval"
-      c.get(:mykey).should eq("myval")
-    end
-
-    it "raises KeyError if the set value does not exist" do
-      c = Context.new
-      v = c.get(:badkey) 
-      expect { Lazy::demand(v) }.to raise_error(Lazy::LazyException)
-    end
-
-    it "defers evaluation of a get if set has not been called yet" do
-      c = Context.new
-      v = c.get(:mykey)
-      c.set(:mykey, "myval")
-      v.should eq("myval")
     end
 
   end

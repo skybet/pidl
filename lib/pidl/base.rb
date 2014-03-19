@@ -272,16 +272,9 @@ module Pidl
       @logger
     end
 
-    # Store a value with the given key in
-    # the internal context
-    def set key, value
-      @context.set key, value
-    end
-
-    # Retrieve the value of the given key
-    # from the internal context
-    def get key
-      @context.get key
+    # Missing methods get passed on to the context
+    def method_missing(name, *args, &block)
+      @context.send name, *args, &block
     end
 
     # Execute the DSL entity.
