@@ -14,7 +14,7 @@ require_relative 'fakelogger'
 #
 #   pipeline "some_data.import" do
 #
-#       store :import_date, DateTime.now
+#       set :import_date, DateTime.now
 #
 #       task :clear_staging do
 #
@@ -44,12 +44,12 @@ require_relative 'fakelogger'
 #
 #           # Format the data for export hive do action :execute file
 #           "sql/export_some_data.sql" param "max_id", :max_id param
-#           "import_data", retrieve(:import_date).strftime("%F %T") end end
+#           "import_data", get(:import_date).strftime("%F %T") end end
 #
 #       task :complete do after :unstage_data, :export_data
 #
 #           # Store the progress information hbase do action :put table
-#           schema("hbase.table.some_data.id.store") param "data:LAST_ID",
+#           schema("hbase.table.some_data.id.set") param "data:LAST_ID",
 #           :max_id end end
 #
 #   end
@@ -107,7 +107,7 @@ require_relative 'fakelogger'
 # = Config and Schema
 #
 # The #config and #schema functions are simple read-only accessors to
-# underlying key/value stores. These are separated purely along semantic
+# underlying key/value sets. These are separated purely along semantic
 # lines; they could well be loaded from the same configuration files. There
 # are some key use differences that need to be taken into account when using
 # them.
@@ -151,36 +151,36 @@ require_relative 'fakelogger'
 # = Context
 #
 # The context is automatically shared between the pipeline, tasks and actions
-# and serves as a simple key/value store for maintaining state and passing
+# and serves as a simple key/value set for maintaining state and passing
 # values between tasks. It can be accessed at any time within the DSL block.
 #
 # The context is thread safe so that concurrent tasks will not trample on
-# each other's calls to store.
+# each other's calls to set.
 #
 # == Storing
 #
-# One way to store a value is to call store with a key and a value. The keys
+# One way to set a value is to call set with a key and a value. The keys
 # are generally Ruby symbols rather than strings, although they can be any
 # scalar value. The reason is purely so that keys look different to values.
 #
 # From the example:
 #
-#   store :import_date, DateTime.now
+#   set :import_date, DateTime.now
 #
 # This demonstrates storing a value against a key, and also that normal Ruby
 # code can be executed if required.
 #
 # == Retrieving
 #
-# Call the retrieve function to get a stored value back. As with config and
+# Call the get function to get a stored value back. As with config and
 # schema, retrieval will raise a KeyError if the requested key is not
 # available.
 #
 # From the example:
 #
 #   hive do action :execute file "sql/export_some_data.sql" param "max_id",
-#   retrieve(:max_id) param "import_data",
-#   retrieve(:import_date).strftime("%F %T") end
+#   get(:max_id) param "import_data",
+#   get(:import_date).strftime("%F %T") end
 #
 # This demonstrates retrieving a value and, again, using Ruby code within the
 # DSL block. In this case, the import date is formatted into a standard
@@ -188,7 +188,7 @@ require_relative 'fakelogger'
 #
 # == Automatic Storing
 #
-# Some actions can store values in the context automatically. This can be
+# Some actions can set values in the context automatically. This can be
 # useful for retrieving database results or other deferred tasks. From the
 # example:
 #
@@ -197,20 +197,20 @@ require_relative 'fakelogger'
 #    "MAX_DATE", :max_date end
 #
 # The calls to field provide the field name to be evaluated, and the key
-# under which to store it in the context.
+# under which to set it in the context.
 #
 # == \Lazy Evaluation
 #
-# An important fact to be aware of is that return values from #retrieve are
-# evaluated lazily. In other words, the value is not actually retrieved from
+# An important fact to be aware of is that return values from #get are
+# evaluated lazily. In other words, the value is not actually getd from
 # the context until it is actually used.
 #
 # This is necessary to allow the automatic storing facility to work properly.
 # The query will not be run until the entire block has been executed and the
-# #run method is called on the task. This means that the calls to #retrieve
+# #run method is called on the task. This means that the calls to #get
 # later on cannot possibly succeed.
 #
-# By using lazy evaluation, the result of the call to #retrieve will not
+# By using lazy evaluation, the result of the call to #get will not
 # actually be fetched until the action requires it. By that time, thanks to
 # the dependency handling of the pipeline, the value should be set.
 #
@@ -227,7 +227,7 @@ module Pidl
   # * Access to a shared context object
   #
   # The context object is used as a simple
-  # temporary key/value store to put values
+  # temporary key/value set to put values
   # in a shared place to enable simpler
   # communication between tasks in a pipeline.
   #
@@ -274,14 +274,14 @@ module Pidl
 
     # Store a value with the given key in
     # the internal context
-    def store key, value
-      @context.store key, value
+    def set key, value
+      @context.set key, value
     end
 
     # Retrieve the value of the given key
     # from the internal context
-    def retrieve key
-      @context.retrieve key
+    def get key
+      @context.get key
     end
 
     # Execute the DSL entity.

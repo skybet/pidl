@@ -7,29 +7,29 @@ describe Context do
 
   describe "Key/Value Store" do
 
-    it "returns a stored named value" do
+    it "returns a set named value" do
       c = Context.new
-      c.store :mykey, "myval"
-      c.retrieve(:mykey).should eq("myval")
+      c.set :mykey, "myval"
+      c.get(:mykey).should eq("myval")
     end
 
-    it "raises KeyError if the stored value does not exist" do
+    it "raises KeyError if the set value does not exist" do
       c = Context.new
-      v = c.retrieve(:badkey) 
+      v = c.get(:badkey) 
       expect { Lazy::demand(v) }.to raise_error(Lazy::LazyException)
     end
 
-    it "defers evaluation of a retrieve if store has not been called yet" do
+    it "defers evaluation of a get if set has not been called yet" do
       c = Context.new
-      v = c.retrieve(:mykey)
-      c.store(:mykey, "myval")
+      v = c.get(:mykey)
+      c.set(:mykey, "myval")
       v.should eq("myval")
     end
 
     it "returns the whole context has" do
       c = Context.new
-      c.store(:mykey, "myval")
-      c.store(:myotherkey, "myotherval")
+      c.set(:mykey, "myval")
+      c.set(:myotherkey, "myotherval")
       c.all.should eq({
         mykey: "myval",
         myotherkey: "myotherval"

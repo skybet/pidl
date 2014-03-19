@@ -13,7 +13,7 @@ module Pidl
       @tasks = {}
 
       # Sort out the job name
-      context.store :job_name, name.to_s
+      context.set :job_name, name.to_s
 
       # Create out inner task type
       @tasktype = Class.new(Task) do
