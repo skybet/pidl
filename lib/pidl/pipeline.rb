@@ -50,7 +50,7 @@ module Pidl
       else
         plan = explain
         plan.each do |group|
-          if @single_thread
+          if @single_thread or group.size < 2
             logger.debug "Running task group [#{group}] consecutively"
             run_group_series group
           else
@@ -72,12 +72,12 @@ module Pidl
       return plan
     end
 
-    def dump
-      puts self
+    def dry_run indent=""
+      puts indent + self.to_s
       plan = explain
       plan.each do |group|
         group.each do |key|
-          @tasks[key].dump
+          @tasks[key].dry_run "#{indent}  "
         end
       end
     end
@@ -133,7 +133,7 @@ module Pidl
         logger.debug "Waiting for #{ix + 1} of #{futures.size}"
         Lazy::demand f
       end
-      logger.info "All threads complete"
+      logger.debug "All threads complete"
     end
   end
 

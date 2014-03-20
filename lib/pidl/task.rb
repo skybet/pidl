@@ -25,6 +25,7 @@ module Pidl
     def run
       @actions.each do |action|
         begin
+          logger.info "Running action [#{action.to_s}]"
           action.run
         rescue => e
           if action.raise_on_error?
@@ -65,10 +66,10 @@ module Pidl
       @exit
     end
 
-    def dump
-      puts "    #{self}"
+    def dry_run indent=""
+      puts "#{indent}#{self}"
       @actions.each do |action|
-        puts "        #{action.to_s}"
+        action.dry_run "#{indent}    "
       end
     end
 

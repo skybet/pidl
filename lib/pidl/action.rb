@@ -109,8 +109,12 @@ module Pidl
       @on_error = v
     end
 
-    def dump
-      puts "        #{self}"
+    def dry_run indent=""
+      puts "#{indent}#{self}"
+    end
+
+    def to_s
+      "#{self.basename}:#{@name}:#{@action}"
     end
 
     def raise_on_error?
