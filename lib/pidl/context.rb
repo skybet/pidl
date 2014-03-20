@@ -72,6 +72,10 @@ module Pidl
           end
           v[key]
         end
+
+        define_singleton_method "all_#{name}" do
+          instance_variable_get var_name
+        end
       else
         define_singleton_method name do
           instance_variable_get var_name

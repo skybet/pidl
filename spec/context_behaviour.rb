@@ -92,6 +92,11 @@ shared_examples_for "Context" do
       c.params(:somekey).should eq('somevalue')
     end
 
+    it "returns the full hash if all_params is called" do
+      c = context_instance params: { somekey: 'somevalue' }
+      c.all_params.should eq({ somekey: 'somevalue' })
+    end
+
   end
 
 end
