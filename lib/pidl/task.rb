@@ -23,10 +23,14 @@ module Pidl
     end
 
     def run
+      task_start = Time.now
       @actions.each do |action|
         begin
           logger.info "Running action [#{action.to_s}]"
+          action_start = Time.now
           action.run
+          action_end = Time.now
+          logger.info "[TIMER] #{action.to_s} completed in [#{((action_end - action_start) * 1000).to_i}] ms"
         rescue => e
           if action.raise_on_error?
             set(:error, e.message)
@@ -38,6 +42,8 @@ module Pidl
           logger.info e.message
         end
       end
+      task_end = Time.now
+      logger.info "[TIMER] #{to_s} completed in [#{((task_end - task_start) * 1000).to_i}] ms"
     end
 
     def actions

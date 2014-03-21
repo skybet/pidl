@@ -40,6 +40,7 @@ module Pidl
     end
 
     def run
+      pipeline_start = Time.now
       if @run_one
         t = @run_one.to_sym
         if @tasks[t]
@@ -63,6 +64,8 @@ module Pidl
           end
         end
       end
+      pipeline_end = Time.now
+      logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
     end
 
     def explain
