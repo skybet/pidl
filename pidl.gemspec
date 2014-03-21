@@ -23,7 +23,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler', '~> 1.3'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
-  s.add_development_dependency 'fakefs'
+  s.add_development_dependency 'guard'
+  s.add_development_dependency 'guard-rspec'
 
   s.add_dependency 'lazy'
   s.add_dependency 'log4jruby'
