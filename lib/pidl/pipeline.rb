@@ -11,7 +11,6 @@ module Pidl
 
     def initialize(name, context, flags = nil, &block)
       flags = flags || {}
-      @run_one = flags[:run_one]
       @single_thread = flags[:single_thread] or false
       @actions = flags[:actions] || {}
       @tasks = {}
@@ -41,28 +40,31 @@ module Pidl
 
     def run
       pipeline_start = Time.now
-      if @run_one
-        t = @run_one.to_sym
-        if @tasks[t]
-          @tasks[t].run
+      plan = explain
+      plan.each do |group|
+        if @single_thread or group.size < 2
+          logger.debug "Running task group [#{group}] consecutively"
+          run_group_series group
         else
-          throw RuntimeError.new "Cannot run invalid task [#{@run_one}]"
+          logger.debug "Running task group [#{group}] concurrently"
+          run_group_and_wait group
         end
+        if group.reduce(false) { |r, t| r || @tasks[t].exit? }
+          logger.debug "At least one task requested exit. Terminating now."
+          break
+        end
+      end
+      pipeline_end = Time.now
+      logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
+    end
+
+    def run_one task
+      pipeline_start = Time.now
+      t = task
+      if @tasks[t]
+        @tasks[t].run
       else
-        plan = explain
-        plan.each do |group|
-          if @single_thread or group.size < 2
-            logger.debug "Running task group [#{group}] consecutively"
-            run_group_series group
-          else
-            logger.debug "Running task group [#{group}] concurrently"
-            run_group_and_wait group
-          end
-          if group.reduce(false) { |r, t| r || @tasks[t].exit? }
-            logger.debug "At least one task requested exit. Terminating now."
-            break
-          end
-        end
+        raise RuntimeError.new "Cannot run invalid task [#{task}]"
       end
       pipeline_end = Time.now
       logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"

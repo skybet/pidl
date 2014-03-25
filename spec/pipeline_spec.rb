@@ -409,7 +409,7 @@ describe Pipeline do
     end
 
     it "runs a single task if run_one is set" do
-      p = pipeline({ run_one: "secondtask" }) do; end
+      p = pipeline() do; end
 
       t1 = task :firsttask do
         after :thirdtask
@@ -427,7 +427,22 @@ describe Pipeline do
       expect(t3).not_to receive(:run)
       expect(t2).to receive(:run)
       expect(t1).not_to receive(:run)
-      p.run
+      p.run_one :secondtask
+    end
+
+    it "throws an error if the task is invalid" do
+
+      p = pipeline() do; end
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      expect(t1).not_to receive(:run)
+
+      expect do
+        p.run_one :secondtask
+      end.to raise_error(RuntimeError)
     end
 
   end
