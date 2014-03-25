@@ -5,10 +5,79 @@ require_relative 'task'
 
 module Pidl
 
+  # A pipeline of tasks to be performed.
+  #
+  # This is the entry point to the Pidl pipeline system. It is responsible for
+  # creating, running and cleaning up after any tasks that are part of the
+  # pipeline.
+  #
+  # Tasks are created using the #task method from within the block. These are
+  # named, usually with symbols, and stored in a hash. When it comes to
+  # executing the tasks after the configuration phase, there are various
+  # options:
+  #
+  # #explain::
+  #   Calculate the running order of the tasks and return it, but do not run them.
+  #
+  # #dry_run::
+  #   Display a summary of what would have happened had the tasks been run.
+  #
+  # #run::
+  #   Run the tasks, either consecutively or incorporating concurrency depending on flags.
+  #
+  # During the running of the tasks, the #error_handler is used to clean up any
+  # mess left by erroring code.
+  #
   class Pipeline < PidlBase
 
-    attr_reader :tasks, :error_handler
+    # A hash of tasks by name
+    attr_reader :tasks
 
+    # The error handler task, if configured by #on_error
+    attr_reader :error_handler
+
+    # Create a new pipeline and run its configuration block
+    #
+    # Adds two values to the context:
+    #
+    # * +:job_name+ The name parameter
+    # * +:run_date+ DateTime.now
+    #
+    # Parameters:
+    #
+    # name::
+    #   Any string used in logging
+    #
+    # context::
+    #   A configured instance of Pidl::Context
+    #
+    # actions::
+    #   A hash of actions and their associated classes
+    #
+    # block::
+    #   The configuration block to execute
+    #
+    # The flags are used for two main tasks; configuring the way the tasks are
+    # run, and adding commands for the tasks to use.
+    #
+    # [:single_thread]
+    #   If true, do not use concurrency when running tasks
+    #
+    # [:actions]
+    #   A hash of actions in the form { command => action class }
+    #
+    # Example:
+    #
+    #   actions = {
+    #     file: MyModule::FileAction,
+    #     dir: MyModule::DirAction
+    #   }
+    #   pipeline = Pipeline.new('test_pipeline', context, { actions: actions }, do ...
+    #
+    # The configured pipeline would have two new methods; +file+ and +dir+.
+    # These methods would create instances of MyModule::FileAction and
+    # MyModule::DirAction respectively and store them in the #tasks hash.
+    #
     def initialize(name, context, flags = nil, &block)
       flags = flags || {}
       @single_thread = flags[:single_thread] or false
@@ -22,6 +91,11 @@ module Pidl
       super
     end
 
+    # Create a new Pidl::Task with the given name and configuration block
+    #
+    # Once created, the task is added to #tasks. The tasks inherits the
+    # pipeline's context.
+    #
     def task name, &block
       if ! @tasks[name].nil?
         raise ArgumentError.new "Type #{name} already exists"
@@ -30,11 +104,20 @@ module Pidl
       @tasks[name] = create_task(name, @context, @actions, &block)
     end
 
+    # Create a special task for cleaning up after errors and adds it to #error_handler
+    #
+    # The task inherits the pipeline's context.
+    #
     def on_error &block
       logger.debug "Created error handler"
       @error_handler = create_task(:error_handler, @context, @actions, &block)
     end
 
+    # Add a pre-configured task to the #tasks hash
+    #
+    # Useful for unit testing or injecting specific programatically defined
+    # tasks. Should not generally be used.
+    #
     def add_task task
       if ! @tasks[task.name].nil?
         raise ArgumentError.new "Type #{name} already exists"
@@ -43,6 +126,16 @@ module Pidl
       @tasks[task.name] = task
     end
 
+    # Run the pipeline and all tasks
+    #
+    # Determine the task order using #explain and execute each group of tasks
+    # in order, using either consecutive or concurrent threading models
+    # depending on the +single_thread+ flag passed to the constructor.
+    #
+    # If the #skip? method is true for any reason, will not do anything.
+    #
+    # If any tasks' #skip? method returns true, that task will not be run.
+    #
     def run
       pipeline_start = Time.now
       plan = explain
@@ -86,6 +179,12 @@ module Pidl
       logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
     end
 
+    # Run a single named task
+    #
+    # If the named task exists, run it, otherwise raise an error.
+    #
+    # Does not take Pidl::Task#skip? or Pidl::Task#exit? into account.
+    #
     def run_one task
       pipeline_start = Time.now
       t = task
@@ -98,6 +197,23 @@ module Pidl
       logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
     end
 
+    # Generate an explain plan indicating the order of tasks
+    #
+    # Returns an array of arrays representing the groups of tasks. Each group in the outer array will be run one after the other. The tasks within each subarray will be run consecutively. For example, consider this explain plan:
+    #
+    #   [
+    #     [ :setup ],
+    #     [ :stage_one, :stage_two ],
+    #     [ :unstage ]
+    #   ]
+    #
+    # The :setup task will run first on its own. The :stage_one and :stage_two
+    # tasks will then be run concurrently. Finally, the :unstage task will be
+    # run on its own.
+    #
+    # In the case of single threaded execution, the groups with multiple tasks
+    # will be run consecutively in no particular order.
+    #
     def explain
       plan = build_plan
       check_plan plan
@@ -105,6 +221,12 @@ module Pidl
       return plan
     end
 
+    # Call dry_run on all tasks
+    #
+    # Order the tasks with #explain and call dry run, passing an indent in to
+    # each to make an easily readable explanation of the actions that will
+    # occur.
+    #
     def dry_run indent=""
       puts indent + self.to_s
       plan = explain
@@ -149,6 +271,12 @@ module Pidl
 
     private
 
+    # Create a new task instance and inject the custom actions into it
+    #
+    # Normally tasks do not have many actions available. We inject the custom
+    # actions into each new task rather than create a new class derived from
+    # Task for simplicity and expandability.
+    #
     def create_task name, context, actions, &block
       Task.new name, context do
         actions.each { |name, type|
@@ -158,6 +286,10 @@ module Pidl
       end
     end
 
+    # Run a group of tasks consecutively
+    #
+    # Use a simple #each call. Order of tasks within a group is not guaranteed.
+    #
     def run_group_series group
       group.each do |t|
         if not @tasks[t].skip?
@@ -169,6 +301,15 @@ module Pidl
       end
     end
 
+    # Run a group of tasks concurrently
+    #
+    # Use Lazy::future to get a list of thread handles and wait for them all.
+    #
+    # This way may not be particular configurable, and the slowest task in each
+    # group will take as long as all the others in the same group. Instead of
+    # "true" concurrency, this gives us a nice layered method of concurrency
+    # that makes it very easy to reason about what is happening now and next.
+    #
     def run_group_and_wait group
       futures = group.map do
         |t| Lazy::future do
