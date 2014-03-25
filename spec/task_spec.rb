@@ -124,6 +124,8 @@ describe Task do
         expect do
           t.run
         end.to raise_error(RuntimeError)
+
+        t.error?.should eq(true)
       end
 
     end
@@ -146,6 +148,7 @@ describe Task do
         end.not_to raise_error
 
         t.exit?.should eq(true)
+        t.error?.should eq(true)
       end
     end
 
@@ -167,6 +170,7 @@ describe Task do
         end.not_to raise_error
 
         t.exit?.should eq(false)
+        t.error?.should eq(false)
       end
     end
 

@@ -14,6 +14,10 @@ describe Pipeline do
     return Pipeline.new :name_of_job, @context, options, &block
   end
 
+  def task name, &block
+    Task.new name, @context, &block
+  end
+
   before(:each) do
     @context = Context.new
   end
@@ -72,6 +76,96 @@ describe Pipeline do
           end
         end
       end.to raise_error(ArgumentError)
+    end
+
+  end
+
+  describe "on_error" do
+
+    it "adds an error handler task" do
+      p = pipeline do
+        on_error do
+        end
+      end
+      p.error_handler.name.should eq(:error_handler)
+    end
+
+    it "does not call error handler if no error" do
+      p = pipeline do
+        task :noerror do
+        end
+
+        on_error do
+        end
+      end
+      expect(p.error_handler).not_to receive(:run)
+      p.run
+    end
+
+    it "calls the error handler if an error is raised" do
+      expect do
+        p = pipeline do
+          on_error do
+          end
+        end
+
+        t = task :task do; end
+        p.add_task(t)
+        expect(t).to receive(:exit?).and_raise(RuntimeError.new "test")
+
+        expect(p.error_handler).to receive(:run)
+        p.run
+      end.to raise_error(RuntimeError)
+    end
+
+    it "calls the error handler if a task exits with an error" do
+      p = pipeline do
+        on_error do
+        end
+      end
+
+      t = task :task do; end
+      p.add_task(t)
+      expect(t).to receive(:exit?).and_return(true)
+      expect(t).to receive(:error?).and_return(true)
+
+      expect(p.error_handler).to receive(:run)
+      p.run
+    end
+
+    it "does not call the error handler if a tasks exits with no error" do
+      p = pipeline do
+        on_error do
+        end
+      end
+
+      t = task :task do; end
+      p.add_task(t)
+      allow(t).to receive(:exit?).and_return(true)
+      allow(t).to receive(:error?).and_return(false)
+
+      expect(p.error_handler).not_to receive(:run)
+      p.run
+    end
+
+    it "calls the error handler if one task in a group exits with an error" do
+      p = pipeline do
+        on_error do
+        end
+      end
+
+      t1 = task :task do; end
+      p.add_task(t1)
+      allow(t1).to receive(:exit?).and_return(false)
+      allow(t1).to receive(:error?).and_return(false)
+
+      t2 = task :task2 do; end
+      p.add_task(t2)
+      allow(t2).to receive(:exit?).and_return(true)
+      allow(t2).to receive(:error?).and_return(true)
+
+      expect(p.error_handler).to receive(:run)
+      p.run
     end
 
   end
@@ -208,10 +302,6 @@ describe Pipeline do
   end
 
   shared_examples_for "#run" do
-
-    def task name, &block
-      Task.new name, @context, &block
-    end
 
     it "runs a single task" do
       p = get_pipeline
@@ -366,39 +456,6 @@ describe Pipeline do
       end
       p.run
     end
-
-    ## Sample only - uncomment to watch
-    # multi-threaded dispatch working
-    #
-    #it "does funky stuff with threads" do
-    #    p = pipeline do; end
-
-    #    t1 = task :firsttask do; end
-    #    def t1.run
-    #        sleep 16
-    #        puts "t1"
-    #    end
-    #    p.add_task t1
-    #    t2 = task :secondtask do; end
-    #    def t2.run
-    #        sleep 14
-    #        puts "t2"
-    #    end
-    #    p.add_task t2
-    #    t3 = task :thirdtask do; end
-    #    def t3.run
-    #        sleep 12
-    #        puts "t3"
-    #    end
-    #    p.add_task t3
-    #    t4 = task :fourthtask do; end
-    #    def t4.run
-    #        sleep 10
-    #        puts "t4"
-    #    end
-    #    p.add_task t4
-    #    p.run
-    #end
 
   end
 

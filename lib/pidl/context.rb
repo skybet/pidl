@@ -38,9 +38,6 @@ module Pidl
       logger.debug "Promising key [#{key}]"
       return Lazy::promise do
         @mutex.synchronize do
-          if @context[key].nil?
-            raise KeyError.new("Key [#{key}] not found in context")
-          end
           logger.debug "Evaluated [#{key}] as [#{@context[key]}]"
           @context[key]
         end

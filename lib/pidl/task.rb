@@ -68,6 +68,10 @@ module Pidl
       }.empty?
     end
 
+    def error?
+      not @context.get(:error).nil?
+    end
+
     def exit?
       @exit
     end

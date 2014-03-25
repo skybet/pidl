@@ -10,10 +10,10 @@ shared_examples_for "Context" do
       c.get(:mykey).should eq("myval")
     end
 
-    it "raises KeyError if the set value does not exist" do
+    it "returns nil if the set value does not exist" do
       c = context_instance
       v = c.get(:badkey) 
-      expect { Lazy::demand(v) }.to raise_error(Lazy::LazyException)
+      Lazy::demand(v).should eq(nil)
     end
 
     it "defers evaluation of a get if set has not been called yet" do

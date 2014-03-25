@@ -7,7 +7,7 @@ module Pidl
 
   class Pipeline < PidlBase
 
-    attr_reader :tasks
+    attr_reader :tasks, :error_handler
 
     def initialize(name, context, flags = nil, &block)
       flags = flags || {}
@@ -30,6 +30,11 @@ module Pidl
       @tasks[name] = create_task(name, @context, @actions, &block)
     end
 
+    def on_error &block
+      logger.debug "Created error handler"
+      @error_handler = create_task(:error_handler, @context, @actions, &block)
+    end
+
     def add_task task
       if ! @tasks[task.name].nil?
         raise ArgumentError.new "Type #{name} already exists"
@@ -41,19 +46,37 @@ module Pidl
     def run
       pipeline_start = Time.now
       plan = explain
-      plan.each do |group|
-        if @single_thread or group.size < 2
-          logger.debug "Running task group [#{group}] consecutively"
-          run_group_series group
-        else
-          logger.debug "Running task group [#{group}] concurrently"
-          run_group_and_wait group
+
+      begin
+        plan.each do |group|
+
+          # Run single or multithreaded
+          if @single_thread or group.size < 2
+            logger.debug "Running task group [#{group}] consecutively"
+            run_group_series group
+          else
+            logger.debug "Running task group [#{group}] concurrently"
+            run_group_and_wait group
+          end
+
+          # See if we need to exit
+          if group.reduce(false) { |r, t| r || @tasks[t].exit? }
+            logger.debug "At least one task requested exit. Terminating now."
+
+            # Check if an error was raised, and if so, clean up
+            if group.reduce(false) { |r, t| r || @tasks[t].error? }
+              attempt_cleanup
+            end
+
+            break
+          end
+
         end
-        if group.reduce(false) { |r, t| r || @tasks[t].exit? }
-          logger.debug "At least one task requested exit. Terminating now."
-          break
-        end
+      rescue => e
+        attempt_cleanup
+        raise
       end
+
       pipeline_end = Time.now
       logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
     end
@@ -88,6 +111,16 @@ module Pidl
     end
 
     private
+
+    def attempt_cleanup
+      begin
+        if @error_handler
+          @error_handler.run
+        end
+      rescue => e
+        logger.error "Error while running error handler: #{e.message}"
+      end
+    end
 
     def build_plan plan=[]
       p = plan.flatten
