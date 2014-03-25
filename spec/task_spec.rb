@@ -103,6 +103,21 @@ describe Task do
       t.run
     end
 
+    it "skips actions that request it" do
+      t = task do; end
+      a = t.add_action(action do; end)
+      b = t.add_action(action do; end)
+      c = t.add_action(action do; end)
+
+      allow(b).to receive(:skip?).and_return(true)
+      expect(b).not_to receive(:run)
+      expect(a).to receive(:run) do
+        expect(c).to receive(:run)
+      end
+
+      t.run
+    end
+
   end
 
   context "action error" do

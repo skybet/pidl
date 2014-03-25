@@ -26,11 +26,15 @@ module Pidl
       task_start = Time.now
       @actions.each do |action|
         begin
-          logger.info "Running action [#{action.to_s}]"
-          action_start = Time.now
-          action.run
-          action_end = Time.now
-          logger.info "[TIMER] #{action.to_s} completed in [#{((action_end - action_start) * 1000).to_i}] ms"
+          if not action.skip?
+            logger.info "Running action [#{action.to_s}]"
+            action_start = Time.now
+            action.run
+            action_end = Time.now
+            logger.info "[TIMER] #{action.to_s} completed in [#{((action_end - action_start) * 1000).to_i}] ms"
+          else
+            logger.debug "Skipping action [#{action.to_s}]"
+          end
         rescue => e
           if action.raise_on_error?
             set(:error, e.message)

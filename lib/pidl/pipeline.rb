@@ -155,16 +155,24 @@ module Pidl
 
     def run_group_series group
       group.each do |t|
-        logger.info "Running task [#{t}]"
-        @tasks[t].run
+        if not @tasks[t].skip?
+          logger.info "Running task [#{t}]"
+          @tasks[t].run
+        else
+          logger.debug "Skipping task [#{t}]"
+        end
       end
     end
 
     def run_group_and_wait group
       futures = group.map do
         |t| Lazy::future do
-          logger.info "Running task [#{t}]"
-          @tasks[t].run
+          if not @tasks[t].skip?
+            logger.info "Running task [#{t}]"
+            @tasks[t].run
+          else
+            logger.debug "Skipping task [#{t}]"
+          end
         end
       end
       futures.each_with_index do |f, ix|

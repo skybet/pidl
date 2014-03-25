@@ -62,6 +62,19 @@ module Pidl
       @context.send name, *args, &block
     end
 
+    # Allow if conditions on run
+    def only_if &block
+      if not block.respond_to? :call
+        raise RuntimeError.new "If block should be callable"
+      end
+      @only_if = Lazy::promise &block
+    end
+
+    # Check if we should be skipped
+    def skip?
+      not (@only_if.nil? or @only_if)
+    end
+
     # Execute the DSL entity.
     #
     # Defaults to doing nothing at all.

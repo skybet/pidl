@@ -457,6 +457,31 @@ describe Pipeline do
       p.run
     end
 
+    it "skip tasks that request it" do
+      p = get_pipeline
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      t2 = task :secondtask do
+        after :firsttask
+      end
+      allow(t2).to receive(:skip?).and_return(true)
+      p.add_task(t2)
+
+      t3 = task :thirdtask do
+        after :firsttask
+      end
+      p.add_task(t3)
+
+      expect(t2).not_to receive(:run)
+      expect(t1).to receive(:run) do
+        expect(t3).to receive(:run)
+      end
+      p.run
+    end
+
   end
 
   context "run one" do
