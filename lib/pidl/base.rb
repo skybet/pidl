@@ -11,24 +11,21 @@ module Pidl
   # * Access to the global schema definitions
   # * Access to a shared context object
   #
-  # The context object is used as a simple
-  # temporary key/value set to put values
-  # in a shared place to enable simpler
-  # communication between tasks in a pipeline.
+  # The context object is used as a simple temporary key/value set to put
+  # values in a shared place to enable simpler communication between tasks in a
+  # pipeline. Methods on the context object are made available directly via the
+  # method_missing handler.
   #
-  # The constructor accepts a name and shared context
-  # as well as a block of code to be run. This block
-  # is the actual DSL code and consists of method
-  # calls against this entity, as well as any custom
-  # Ruby code (conditionals, loops, etc) that may
-  # be required.
+  # The constructor accepts a name and shared context as well as a block of
+  # code to be run. This block is the actual DSL code and consists of method
+  # calls against this entity, as well as any custom Ruby code (conditionals,
+  # loops, etc) that may be required.
   #
-  # The method calls used by the block should be
-  # only enough to configure the object. The run
-  # method should then be called to take action
-  # based on that configuration. This means that
-  # ordering is less vital and simplifies
+  # The method calls used by the block should be only enough to configure the
+  # object. The run method should then be called to take action based on that
+  # configuration. This means that ordering is less vital and simplifies
   # handling dependencies between entities.
+  #
   class PidlBase
 
     # The given name of the DSL entity
@@ -37,9 +34,26 @@ module Pidl
     # the name of the type of thing it is.
     attr_reader :name
 
-    # Initialize the DSL entity with a name
-    # and a shared context, then execute the
-    # provided block to allow in-line configuration.
+    # Initialize the DSL entity
+    #
+    # The provided block will be executed in instance context to allow in-line
+    # configuration
+    #
+    # name::
+    #   The name of this entity, usually a string or symbol
+    #
+    # context::
+    #   A configured Pidl::Context instance
+    #
+    # flags::
+    #   Additional configuration
+    #
+    # Valid flags include:
+    #
+    # [:logger]
+    #   A standard Ruby logger to use (defaults to Pidl::FakeLogger)
+    #
+
     def initialize(name, context, flags = {}, &block)
       @name = name
       @context = context
@@ -62,7 +76,11 @@ module Pidl
       @context.send name, *args, &block
     end
 
-    # Allow if conditions on run
+    # Accept a block that evaluates to a boolean
+    #
+    # The block is evaluated only when #skip? is called, allowing this command
+    # to be skipped instead of run.
+    #
     def only_if &block
       if not block.respond_to? :call
         raise RuntimeError.new "If block should be callable"
@@ -70,19 +88,28 @@ module Pidl
       @only_if = Lazy::promise &block
     end
 
-    # Check if we should be skipped
+    # Return true if the #only_if condition returns false
     def skip?
       not (@only_if.nil? or @only_if)
     end
 
     # Execute the DSL entity.
     #
-    # Defaults to doing nothing at all.
-    # Override to provide functionality.
-    def run; end
+    # Defaults to doing nothing at all. Override to provide functionality.
+    def run
+    end
+
+    # Go through the motions of running but describe it to stdout instead
+    #
+    # Dump what would have happened to stdout. If indent is specified, prepend
+    # it to the string before output.
+    #
+    def dry_run indent=""
+    end
 
     protected
 
+    # Return the name of this class without any module names prepended
     def basename
       self.class.name.split("::").last || ""
     end
