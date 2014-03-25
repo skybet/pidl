@@ -30,6 +30,44 @@ module Pidl
   #
   class Action < PidlBase
 
+    # -------------------------------------------------------------------------
+    # :section: Action Factories
+    #
+    # Action factories allow rapid creation of a variety of types of DSL
+    # commands accepting various arguments and storing them in various formats.
+    # The basic set of factories are:
+    #
+    # #setter::
+    #   A simple value setter, accepts one argument and stores it
+    #
+    # #setterlazy::
+    #   Like #setter, but evaluates the value lazily and accepts lambdas and
+    #   blocks
+    #
+    # #vargsetter::
+    #   Like #setter, but accepts multiple arguments and stores them as an
+    #   array
+    #
+    # #vargsetterlazy::
+    #   Like #vargsetter, but evaluates all arguments lazily and accepts
+    #   lambdas
+    #
+    # #arraysetter::
+    #   Like #setter, but stores values in an array and allows multiple calls
+    #
+    # #arraysetterlazy::
+    #   Like #arraysetter, but evaluates each argument lazily and accepts
+    #   lambdas and blocks
+    #
+    # #hashsetter::
+    #   A simple key/value setter, accepts a key and a value and stores an
+    #   internal hash. Allows multiple calls and overwrites duplicate keys.
+    #
+    # #hashsetterlazy::
+    #   Like #hashsetter, but lazily evaluates the values. Keys are already
+    #   evaluated immediately. Accepts lambdas and blocks.
+    # -------------------------------------------------------------------------
+
     # Create a unary, non-repeatable DSL command
     #
     # Accepts a single argument and stores it in an instance variable of the
@@ -45,6 +83,11 @@ module Pidl
     #     @mycommand = value
     #   end
     #
+    # :call-seq:
+    #   setter *method_names
+    #
+    # :category: Action Factories
+    #
     def self.setter(*method_names)
       method_names.each do |name|
         send :define_method, name do |value|
@@ -57,6 +100,9 @@ module Pidl
     # Create a unary, non-repeatable DSL command with lazy evaluation
     #
     # See Pidl::Action::setter
+    #
+    # :call-seq:
+    #   setterlazy *method_names
     #
     def self.setterlazy(*method_names)
       method_names.each do |name|
@@ -92,6 +138,9 @@ module Pidl
     #     @mycommand = values
     #   end
     #
+    # :call-seq:
+    #   vargsetter *method_names
+    #
     def self.vargsetter(*method_names)
       method_names.each do |name|
         send :define_method, name do |*value|
@@ -103,6 +152,9 @@ module Pidl
     # Create an n-ary, non-repeatable DSL command with lazy evaluation
     #
     # See Pidl::Action::vargsetter
+    #
+    # :call-seq:
+    #   vargsetterlazy *method_names
     #
     def self.vargsetterlazy(*method_names)
       method_names.each do |name|
@@ -136,6 +188,9 @@ module Pidl
     #     end
     #   end
     #
+    # :call-seq:
+    #   arraysetter *method_names
+    #
     def self.arraysetter(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
@@ -154,6 +209,9 @@ module Pidl
     # Create a unary, repeatable DSL command with lazy evaluation
     #
     # See Pidl::Action::arraysetter
+    #
+    # :call-seq:
+    #   arraysetterlazy *method_names
     #
     def self.arraysetterlazy(*method_names)
       method_names.each do |name|
@@ -202,6 +260,9 @@ module Pidl
     #     end
     #   end
     #
+    # :call-seq:
+    #   hashsetter *method_names
+    #
     def self.hashsetter(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
@@ -219,6 +280,9 @@ module Pidl
     # Create a binary, repeatable DSL command
     #
     # See Pidl::Action::hashsetter
+    #
+    # :call-seq:
+    #   hashsetterlazy *method_names
     #
     def self.hashsetterlazy(*method_names)
       method_names.each do |name|
@@ -247,6 +311,8 @@ module Pidl
       end
     end
 
+    # :section:
+
     # The action attribute and command to set it
     setter :action
 
@@ -258,11 +324,17 @@ module Pidl
     end
 
     # See Pidl::PidlBase#run
+    #
+    # :call-seq:
+    #   run
     def run
       puts "#{indent}#{self}"
     end
 
     # See Pidl::PidlBase#dry_run
+    #
+    # :call-seq:
+    #   dry_run indent=""
     def dry_run indent=""
       puts "#{indent}#{self}"
     end
@@ -274,6 +346,9 @@ module Pidl
     # suffices to check that the requestion @action is a valid one.
     #
     # Called by Pidl::Action::new
+    #
+    # :call-seq:
+    #   validate
     #
     def validate
     end
@@ -292,11 +367,15 @@ module Pidl
     #
     # [:continue] Carry on as if the error did not happen
     #
+    # :call-seq:
+    #   on_error :value
+    #
     def on_error v
       if not [:raise, :exit, :continue].include? v
         raise RuntimeError.new "Error response [#{v}] is invalid"
       end
       @on_error = v
+      self
     end
 
     # Convert this action to a string
@@ -309,16 +388,25 @@ module Pidl
     #
     #   File:/tmp/myfile:delete
     #
+    # :call-seq:
+    #   to_s -> str
+    #
     def to_s
       "#{self.basename}:#{@name}:#{@action}"
     end
 
     # True if on_error called with :raise
+    #
+    # :call-seq:
+    #   raise_on_error? -> bool
     def raise_on_error?
       @on_error == :raise
     end
 
     # True if on_error called with :exit
+    #
+    # :call-seq:
+    #   exit_on_error? -> bool
     def exit_on_error?
       @on_error == :exit
     end

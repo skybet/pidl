@@ -17,13 +17,16 @@ module Pidl
 
     # Define an action method to create an action of a given type
     #
-    # The action_sym parameter is a symbol representing the name of the method
+    # The :name parameter is a symbol representing the name of the method
     # used to instantiate this action. The type is a class derived from
     # Pidl::Action.
     #
     # New actions are added to the #actions array via #add_action
     #
-    def add_custom_action(action_sym, type)
+    # :call-seq:
+    #   add_custom_action :name, type
+    #
+    def add_custom_action action_sym, type
       define_singleton_method action_sym do |name = nil, &block|
         name ||= "#{@name}.#{action_sym}"
         a = type.new(name, @context, &block)
@@ -36,8 +39,11 @@ module Pidl
     # The list is stored as an array and used in the #first? and #ready?
     # methods.
     #
-    def after *args
-      @after = args
+    # :call-seq:
+    #   after *task_names
+    #
+    def after *task_names
+      @after = task_names
     end
 
     # Create a new Task instance
@@ -59,6 +65,9 @@ module Pidl
     # If an action throws an error, query the Pidl::Action#raise_on_error? and
     # Pidl::Action#exit_on_error? to determine what to do. Reraise the error if
     # requested, or alternatively set the #exit? flag to true.
+    #
+    # :call-seq:
+    #   run
     #
     def run
       task_start = Time.now
@@ -88,7 +97,10 @@ module Pidl
       logger.info "[TIMER] #{to_s} completed in [#{((task_end - task_start) * 1000).to_i}] ms"
     end
 
-    # Get a list of all configured actions
+    # Get an array of all configured actions
+    #
+    # :call-seq:
+    #   actions -> array
     def actions
       @actions
     end
@@ -98,6 +110,9 @@ module Pidl
     # Useful for injecting programmatically created actions or testing. Not to
     # be generally used.
     #
+    # :call-seq:
+    #   add_action actions -> action
+    #
     def add_action(a)
       @actions << a
       a
@@ -106,6 +121,10 @@ module Pidl
     # Return true if this task is one of the first to be run
     #
     # "First" is defined simply as "having no dependencies".
+    #
+    # :call-seq:
+    #   first? -> bool
+    #
     def first?
       @after == nil || @after.empty?
     end
@@ -114,6 +133,9 @@ module Pidl
     #
     # Given a list of already-run tasks, check that all the dependencies in
     # #after are listed.
+    #
+    # :call-seq:
+    #   ready? -> bool
     #
     def ready? seen
       if first?
@@ -127,17 +149,28 @@ module Pidl
     # Return true if an error has been raised by this or any other task
     #
     # Implemented as a check for :error in @context. True if not nil?
+    #
+    # :call-seq:
+    #   error? -> bool
+    #
     def error?
       not get(:error).nil?
     end
 
     # Return true if, during the run, this task requested that the pipeline
     # exit.
+    #
+    # :call-seq:
+    #   exit? -> bool
+    #
     def exit?
       @exit
     end
 
     # Display a description of this task and all its actions, indented by 2 spaces
+    #
+    # :call-seq:
+    #   dry_run indent=""
     def dry_run indent=""
       puts "#{indent}#{self}"
       @actions.each do |action|

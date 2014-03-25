@@ -76,6 +76,9 @@ module Pidl
     #
     # Overwrites previous values if present.
     #
+    # :call-seq:
+    #   set key, value
+    #
     def set key, value
       @mutex.synchronize {
         logger.debug "Setting #{key} => #{value}"
@@ -86,6 +89,9 @@ module Pidl
     # Retrieve the given key from the context and return the value
     #
     # The value is lazily evaluated and synchronized.
+    #
+    # :call-seq:
+    #   get key -> mixed
     #
     def get key
       logger.debug "Promising key [#{key}]"
@@ -98,11 +104,17 @@ module Pidl
     end
 
     # Get a hash containing all keys and values of the context
+    #
+    # :call-seq:
+    #   all -> hash
     def all
       @context
     end
 
     # Get the logger
+    #
+    # :call-seq:
+    #   logger -> Logger
     def logger
       @logger
     end

@@ -62,17 +62,23 @@ module Pidl
     end
 
     # Convert to string
+    #
+    # :call-seq:
+    #   to_s -> str
     def to_s
       "%s:%s" % [ self.basename, @name ]
     end
 
     # Return the configured logger
+    #
+    # :call-seq:
+    #   logger -> Logger
     def logger
       @logger
     end
 
     # Missing methods get passed on to the context
-    def method_missing(name, *args, &block)
+    def method_missing(name, *args, &block) # :nodoc:
       @context.send name, *args, &block
     end
 
@@ -81,14 +87,21 @@ module Pidl
     # The block is evaluated only when #skip? is called, allowing this command
     # to be skipped instead of run.
     #
+    # :call-seq:
+    #   only_if &block
+    #
     def only_if &block
       if not block.respond_to? :call
         raise RuntimeError.new "If block should be callable"
       end
       @only_if = Lazy::promise &block
+      nil
     end
 
     # Return true if the #only_if condition returns false
+    #
+    # :call-seq:
+    #   skip? -> bool
     def skip?
       not (@only_if.nil? or @only_if)
     end
@@ -96,6 +109,10 @@ module Pidl
     # Execute the DSL entity.
     #
     # Defaults to doing nothing at all. Override to provide functionality.
+    #
+    # :call-seq:
+    #   run
+    #
     def run
     end
 
@@ -104,12 +121,17 @@ module Pidl
     # Dump what would have happened to stdout. If indent is specified, prepend
     # it to the string before output.
     #
+    # :call-seq:
+    #   dry_run indent=""
+    #
     def dry_run indent=""
     end
 
     protected
 
     # Return the name of this class without any module names prepended
+    # :call-seq:
+    #   basename -> str
     def basename
       self.class.name.split("::").last || ""
     end

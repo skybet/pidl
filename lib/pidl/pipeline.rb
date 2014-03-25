@@ -96,6 +96,9 @@ module Pidl
     # Once created, the task is added to #tasks. The tasks inherits the
     # pipeline's context.
     #
+    # :call-seq:
+    #   task :name, &block -> task
+    #
     def task name, &block
       if ! @tasks[name].nil?
         raise ArgumentError.new "Type #{name} already exists"
@@ -108,6 +111,9 @@ module Pidl
     #
     # The task inherits the pipeline's context.
     #
+    # :call-seq:
+    #   on_error &block -> task
+    #
     def on_error &block
       logger.debug "Created error handler"
       @error_handler = create_task(:error_handler, @context, @actions, &block)
@@ -117,6 +123,9 @@ module Pidl
     #
     # Useful for unit testing or injecting specific programatically defined
     # tasks. Should not generally be used.
+    #
+    # :call-seq:
+    #   add_task task -> task
     #
     def add_task task
       if ! @tasks[task.name].nil?
@@ -135,6 +144,9 @@ module Pidl
     # If the #skip? method is true for any reason, will not do anything.
     #
     # If any tasks' #skip? method returns true, that task will not be run.
+    #
+    # :call-seq:
+    #   run
     #
     def run
       pipeline_start = Time.now
@@ -185,6 +197,9 @@ module Pidl
     #
     # Does not take Pidl::Task#skip? or Pidl::Task#exit? into account.
     #
+    # :call-seq:
+    #   run_one
+    #
     def run_one task
       pipeline_start = Time.now
       t = task
@@ -214,6 +229,9 @@ module Pidl
     # In the case of single threaded execution, the groups with multiple tasks
     # will be run consecutively in no particular order.
     #
+    # :call-seq:
+    #   explain
+    #
     def explain
       plan = build_plan
       check_plan plan
@@ -226,6 +244,9 @@ module Pidl
     # Order the tasks with #explain and call dry run, passing an indent in to
     # each to make an easily readable explanation of the actions that will
     # occur.
+    #
+    # :call-seq:
+    #   dry_run indent=""
     #
     def dry_run indent=""
       puts indent + self.to_s
