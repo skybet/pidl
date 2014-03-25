@@ -5,7 +5,7 @@ rdoc_include:
 - .
 - /home/candrews/code/datawarehouse/gems/pidl
 charset: UTF-8
-exclude: !ruby/regexp /(?-mix:doc\/)|(?-mix:spec\/)/
+exclude: !ruby/regexp /(?-mix:doc\/)|(?-mix:spec\/)|(?-mix:Gemfile)|(?-mix:Guardfile)|(?-mix:LICENSE.txt)|(?-mix:pidl.gemspec)|(?-mix:Rakefile)/
 hyperlink_all: false
 line_numbers: false
 main_page: README.rdoc
