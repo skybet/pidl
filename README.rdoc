@@ -1,219 +1,149 @@
-# = Pidl
+# :markup: markdown
+# :title: Pidl - PIpeline Definition Language
 #
-# Pidl is a Pipeline Description Language generation tool.
+# # Pidl
 #
-# The PIpeline Definition Language provides a simple way to script
-# configuration of pipelines of work to be performed against the Maximus
-# cluster. Each pipeline is broken down into tasks, and each task is broken
-# down into actions.
+# The PIpeline Definition Language provides a simple way to script pipelines of
+# work to do just about anything. Each pipeline is broken down into tasks, and
+# each task is broken down into actions. The actions can be built quickly and
+# easily and perform just about any task imaginable.
 #
-# == Example
+# # Getting Started
 #
-# The DSL consists of a series of classes that are created, configured and
-# nested by blocks of pure Ruby code passed in to each one. The best way to
-# illustrate this concept is by way of a small example:
+# Pidl pipelines are defined by a very simple, Ruby-esque DSL that should be
+# familiar with anyone who has used a Ruby DSL before. There are a handful of
+# simple constructs already created to get your first pipeline started.
 #
-#   pipeline "some_data.import" do
+#     require 'pidl'
 #
-#       set :import_date, DateTime.now
+#     context # Pidl::Context.new
+#     pipeline # Pidl::Pipeline.new 'My Pipeline', context do
 #
-#       task :clear_staging do
+#       task :first_task do
+#         # Put actions in here
+#       end
 #
-#           # Create the staging location, if it # doesn't exist hdfs do
-#           action :mkdirs path schema("hdfs.db.staging") end
+#       task :second_task do
+#         after :first_task
+#       end
 #
-#           # Delete any old data hdfs do action :delete path
-#           schema("hdfs.table.staging.some_data") end end
+#       task :third_task do
+#         after :first_task
+#       end
 #
-#       task :stage_data do after :clear_staging
+#       task :fourth_task do
+#         after :first_task, :third_task
+#       end
 #
-#           # Grab the data from the DB sqoop do action :import file
-#           "sql/import_some_data.ifx.sql" param "limit",
-#           config("sqoop.limit.clause") done
+#       on_error do
+#         # Put error cleanup in here
+#       end
 #
-#           # Find out the progress information hive do action :selectone
-#           query "SELECT * FROM ${hive.table.staging.some_data}" field
-#           "MAX_ID", :max_id field "MAX_DATE", :max_date end end
+#     end
 #
-#       task :unstage_data do after :stage_data
+# This pipeline will do absolutely nothing, but it will let us explore some
+# important aspects of the system.
 #
-#           # Merge the data in hive do action :execute file
-#           "sql/unstage_some_data.sql" param "max_id", :max_id param
-#           "max_date", :max_date end end
+# ## Running the Pipeline
 #
-#       task :export_data do after :stage_data
+# Running the pipeline is achieved by calling Pidl::Pipeline#run.
 #
-#           # Format the data for export hive do action :execute file
-#           "sql/export_some_data.sql" param "max_id", :max_id param
-#           "import_data", get(:import_date).strftime("%F %T") end end
+#     pipeline.run
 #
-#       task :complete do after :unstage_data, :export_data
+# The #run method will calculate the optimal grouping of tasks to ensure
+# dependencies are satisfied (more on those later) and execute all the tasks,
+# parallelising where possible.
 #
-#           # Store the progress information hbase do action :put table
-#           schema("hbase.table.some_data.id.set") param "data:LAST_ID",
-#           :max_id end end
+# ## Explain Plan
 #
+# In order to find out what the optimal grouping of tasks is that the run
+# method discovered, call instead the Pidl::Pipeline#explain method. This will
+# return an array of arrays containing groupings of tasks in the order they
+# should be run.
+#
+# Executing #explain provides the following explain plan:
+#
+# ``` ruby
+# [
+#   [ first_task ],
+#   [ second_task, third_task ],
+#   [ fourth_task ]
+# ]
+# ```
+#
+# Each group is a set of concurrent tasks. The first and third group only
+# contain one, but the second group has two, meaning that :second_task and
+# :third_task can be run concurrently because they do not depend on each other.
+#
+# The Pidl::Pipeline#explain method also catches unreachable tasks and
+# recursive dependencies so you can be sure that the plan is sane.
+#
+# A similar tool is Pidl::Pipeline#dry_run, which outputs a description of the
+# pipeline, each task and each action explaining exactly what the configured
+# parameters will do.
+#
+# ```
+# Pipeline:My Pipeline
+#   Task:first_task
+#   Task:second_task
+# ```
+#
+# # Creating An Action
+#
+# All actions are created as subclasses of the Pidl::Action class. A basic task that does nothing but output its name may look like this:
+#
+# ``` ruby
+# class MeAction < Pidl::Action
+#
+#   setter :surname
+#
+#   def run
+#     case @action
+#     when :print
+#       puts "#{@name} #{@surname}"
+#     end
 #   end
 #
-# Despite its simplicity, this is a complete example that could actually be
-# used (assuming the config and schema values required were actually
-# available to the Maximus class). All the major concepts of the DSL are
-# included here.
+#   def dry_run indent=""
+#     case @action
+#     when :print
+#       puts "#{indent}#{basename}: Print name [#{@name}] with surname [#{surname}]"
+#     end
+#   end
 #
-# == Tasks and Actions
+# end
+# ```
 #
-# The pipeline is broken town into tasks and actions. The tasks are easy to
-# spot because they are created by calling #task and passing in the code that
-# the task should execute.
+# Including this action in the DSL means adding it to the pipeline:
 #
-# Actions are more subtle, but still simple; they are any blocks created
-# inside a task. In this example, the #hdfs, #sqoop, #hive and #hbase calls
-# produce actions inside tasks.
+# ``` ruby
+# acts = {
+#   me: MeAction
+# }
+# pipeline = Pidl::Pipeline.new "My Pipeline", context, actions: acts do
+#   task :first_task do
+#     me "Joe" do
+#       action :print
+#       surname "Bloggs"
+#     end
+#   end
+# end
+# pipeline.dry_run
+# ```
 #
-# === \Task Execution
+# The output appears thus:
 #
-# Tasks are executed according to dependency rules. These are specified by
-# calling #after with a list of identifiers that should precede the current
-# task. There are three ways to do this.
+# ```
+# Pipeline:My Pipeline
+#   Task:first_task
+#     MeAction: Print name [Joe] with surname [Bloggs]
+# ```
 #
-# First, have no dependencies. This makes the task a "first" task and it will
-# be executed as soon as the pipeline is run.
+# Running the pipeline results in the output "Joe Bloggs", as you might expect.
 #
-#   task :some_task do end
+# Read Pidl::Action for more information about validation and other types of
+# command that can be added to an action.
 #
-# Second, have a single dependency. This will make the task run only when
-# that dependency is met; i.e. when the named task has completed executing.
+# # Context
 #
-#   task :some_task do after :some_other_task end
-#
-# Third, have multiple dependencies. This is just like having a single
-# dependency, but _all_ the named tasks must complete before the task will
-# run.
-#
-#   task :some_task do after :some_other_task, :yet_another_task end
-#
-# Naming all dependencies means that the pipeline runner can run tasks
-# concurrently such that a task is never started prematurely.
-#
-# === Action Execution
-#
-# Actions are much simpler than tasks; they are always executed consecutively
-# based on the order of creation. If a hive action follows a sqoop action, it
-# is safe to assume that the sqoop task will be finished before the hive
-# action is run.
-#
-# There is no concurrency of actions within a task; they are purely linear.
-# This simplifies task construction.
-#
-# == Config and Schema
-#
-# The #config and #schema functions are simple read-only accessors to
-# underlying key/value sets. These are separated purely along semantic
-# lines; they could well be loaded from the same configuration files. There
-# are some key use differences that need to be taken into account when using
-# them.
-#
-# === Config
-#
-# Calling #config with a string identifier will return the value associated
-# with that key. If the value does not exist a KeyError is raised.
-#
-# The fact that the DSL block is executed in its entirety before any of the
-# tasks are actions are run means that a KeyError when calling config will
-# not cause the pipeline to terminate part-way through the run.
-#
-# The config method makes no guarantees about type. It is entirely likely
-# that everything that is in config is stored as a string and may need
-# casting, although that is generally left to the actions themselves.
-#
-# === Schema
-#
-# Calling #schema has identical behaviour to #config, in that it will return
-# a value that is present, or raise a KeyError if not. The difference between
-# the two is in the automatic use of schema within queries.
-#
-# Queries are automatically parsed, using values in the schema, by all the
-# actions when they are configured. This is true whether the query comes from
-# a string or a local file. The interpolation uses a bash style ${} format.
-#
-# Contrary to the schema variables, parameters are evaluated when the task is
-# run. This means the queries go through a two-stage parsing process,
-# although missing params are noted immediately.
-#
-# This interpolation is demonstrated in the :stage_data task in the example:
-#
-#    hive do action :selectone query "SELECT * FROM
-#    ${hive.table.staging.some_data}" field "MAX_ID", :max_id field
-#    "MAX_DATE", :max_date end
-#
-# The identifier ${hive.table.staging.some_data} will return the same value
-# as a call to schema("hive.table.staging.some_data").
-#
-# == Context
-#
-# The context is automatically shared between the pipeline, tasks and actions
-# and serves as a simple key/value set for maintaining state and passing
-# values between tasks. It can be accessed at any time within the DSL block.
-#
-# The context is thread safe so that concurrent tasks will not trample on
-# each other's calls to set.
-#
-# === Storing
-#
-# One way to set a value is to call set with a key and a value. The keys
-# are generally Ruby symbols rather than strings, although they can be any
-# scalar value. The reason is purely so that keys look different to values.
-#
-# From the example:
-#
-#   set :import_date, DateTime.now
-#
-# This demonstrates storing a value against a key, and also that normal Ruby
-# code can be executed if required.
-#
-# === Retrieving
-#
-# Call the get function to get a stored value back. As with config and
-# schema, retrieval will raise a KeyError if the requested key is not
-# available.
-#
-# From the example:
-#
-#   hive do action :execute file "sql/export_some_data.sql" param "max_id",
-#   get(:max_id) param "import_data",
-#   get(:import_date).strftime("%F %T") end
-#
-# This demonstrates retrieving a value and, again, using Ruby code within the
-# DSL block. In this case, the import date is formatted into a standard
-# "YYYY-mm-dd HH:MM:SS" date/time string.
-#
-# === Automatic Storing
-#
-# Some actions can set values in the context automatically. This can be
-# useful for retrieving database results or other deferred tasks. From the
-# example:
-#
-#    hive do action :selectone query "SELECT * FROM
-#    ${hive.table.staging.some_data}" field "MAX_ID", :max_id field
-#    "MAX_DATE", :max_date end
-#
-# The calls to field provide the field name to be evaluated, and the key
-# under which to set it in the context.
-#
-# === \Lazy Evaluation
-#
-# An important fact to be aware of is that return values from #get are
-# evaluated lazily. In other words, the value is not actually getd from
-# the context until it is actually used.
-#
-# This is necessary to allow the automatic storing facility to work properly.
-# The query will not be run until the entire block has been executed and the
-# #run method is called on the task. This means that the calls to #get
-# later on cannot possibly succeed.
-#
-# By using lazy evaluation, the result of the call to #get will not
-# actually be fetched until the action requires it. By that time, thanks to
-# the dependency handling of the pipeline, the value should be set.
-#
-# This does not affect thread safety.
 #

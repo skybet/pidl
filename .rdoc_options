@@ -3,11 +3,10 @@ encoding: UTF-8
 static_path: []
 rdoc_include:
 - .
-- /home/candrews/code/datawarehouse/gems/pidl
 charset: UTF-8
 exclude: !ruby/regexp /(?-mix:doc\/)|(?-mix:spec\/)|(?-mix:Gemfile)|(?-mix:Guardfile)|(?-mix:LICENSE.txt)|(?-mix:pidl.gemspec)|(?-mix:Rakefile)/
 hyperlink_all: false
-line_numbers: false
+line_numbers: true
 main_page: README.rdoc
 markup: rdoc
 output_decoration: true
@@ -15,6 +14,6 @@ page_dir:
 show_hash: false
 tab_width: 8
 template_stylesheets: []
-title: 
+title: PIDL - PIpeline Definition Language
 visibility: :protected
 webcvs: 

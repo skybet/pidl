@@ -286,7 +286,7 @@ module Pidl
     def check_plan plan
       f = plan.flatten
       if f.size != @tasks.size
-        raise RuntimeError.new "Some tasks are unreachable [#{f.join(", ")}]"
+        raise RuntimeError.new "Some tasks are unreachable [#{(@tasks.keys - f).join(", ")}]"
       end
     end
 

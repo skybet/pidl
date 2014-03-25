@@ -313,14 +313,23 @@ module Pidl
 
     # :section:
 
-    # The action attribute and command to set it
-    setter :action
-
     # See Pidl::PidlBase::new
     def initialize(name, context, flags = {}, &block)
+      @action = nil
       @on_error = :raise
       super
       validate
+    end
+
+    # Set the action to perform
+    #
+    # The parameter is usually a symbol for consistency.
+    #
+    # :call-seq:
+    #   action :action
+    #
+    def action action
+      @action = action
     end
 
     # See Pidl::PidlBase#run
