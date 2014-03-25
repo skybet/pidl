@@ -303,6 +303,17 @@ describe Pipeline do
 
   shared_examples_for "#run" do
 
+    it "does nothing if the pipeline skips" do
+      p = get_pipeline
+      allow(p).to receive(:skip?).and_return(true)
+
+      t = task :onlytask do; end
+      p.add_task(t)
+
+      expect(t).not_to receive(:run)
+      p.run
+    end
+
     it "runs a single task" do
       p = get_pipeline
 

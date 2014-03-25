@@ -47,6 +47,11 @@ module Pidl
       pipeline_start = Time.now
       plan = explain
 
+      if skip?
+        logger.info "Pipeline skipped"
+        return
+      end
+
       begin
         plan.each do |group|
 
