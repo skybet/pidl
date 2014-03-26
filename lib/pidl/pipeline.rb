@@ -182,9 +182,13 @@ module Pidl
           end
 
         end
-      rescue => e
+      rescue Lazy::LazyException, StandardError => e
+        if e.is_a? Lazy::LazyException
+          e = e.reason
+        end
+        logger.error "Caught #{e.class.name}: attempting cleanup"
         attempt_cleanup
-        raise
+        raise e
       end
 
       pipeline_end = Time.now
@@ -265,8 +269,12 @@ module Pidl
         if @error_handler and not @error_handler.skip?
           @error_handler.run
         end
-      rescue => e
-        logger.error "Error while running error handler: #{e.message}"
+      rescue Lazy::LazyException, StandardError => e
+        if e.is_a? Lazy::LazyException
+          e = e.reason
+        end
+        logger.error "#{e.class.name} while running error handler: #{e.message}"
+        logger.debug e.backtrace.join("\n")
       end
     end
 
