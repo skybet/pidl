@@ -315,7 +315,56 @@ appears when the query in `:my_task` is run. When the action in
 `:output_task` is run, however, and the query is parsed, there is a `:name`
 key in the context so the correct value is retrieved.
 
-For more information see http://moonbase.rydia.net/software/lazy.rb/
+This does mean that the following limitation exists:
+
+``` ruby
+Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
+
+  task :my_task
+    db "SELECT id, name FROM table WHERE column = value" do
+      action :select_one
+      field "name", :name
+    end
+  end
+
+  task :output_task
+    after :my_task
+    db "UPDATE other_table SET name = ${name} WHERE column = value" do
+      action :execute
+
+      # This breaks because using the value forces it to be evaluated,
+      # and this key doesn't exist yet
+      param "name", "Name: #{ get(:name) }"
+
+      # The proper way to do it:
+      param "name" { "Name: #{ get(:name) }" }
+    end
+  end
+end
+```
+
+The `param` method of the `db` action must be declared as a
+`hashsetterlazy` command type. This means it accepts a block or lambda that is
+evaluated as late as possible rather then during parsing.
+
+For more information about lazy command types, see Pidl::Action.
+
+An extra nicety is that, if using a lazy command type, the call to get can
+be removed entirely, like this:
+
+``` ruby
+
+    db "UPDATE other_table SET name = ${name} WHERE column = value" do
+      action :execute
+      param "name", :name
+    end
+```
+
+The lazy command types assume that if a symbol is passed in, it refers to a
+context key and retrieves it when the action is run.
+
+For more information see http://moonbase.rydia.net/software/lazy.rb/ and
+Pidl::Action.
 
 # Error Handling
 
