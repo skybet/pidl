@@ -262,7 +262,7 @@ module Pidl
 
     def attempt_cleanup
       begin
-        if @error_handler
+        if @error_handler and not @error_handler.skip?
           @error_handler.run
         end
       rescue => e

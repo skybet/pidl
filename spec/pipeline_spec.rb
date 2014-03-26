@@ -133,6 +133,22 @@ describe Pipeline do
       p.run
     end
 
+    it "does not call the error handler if a it should be skipped" do
+      p = pipeline do
+        on_error do
+          only_if { false }
+        end
+      end
+
+      t = task :task do; end
+      p.add_task(t)
+      expect(t).to receive(:exit?).and_return(true)
+      expect(t).to receive(:error?).and_return(true)
+
+      expect(p.error_handler).not_to receive(:run)
+      p.run
+    end
+
     it "does not call the error handler if a tasks exits with no error" do
       p = pipeline do
         on_error do
