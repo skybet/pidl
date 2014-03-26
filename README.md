@@ -290,14 +290,14 @@ using the context.
 ``` ruby
 Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
 
-  task :my_task
+  task :my_task do
     db "SELECT id, name FROM table WHERE column = value" do
       action :select_one
       field "name", :name
     end
   end
 
-  task :output_task
+  task :output_task do
     after :my_task
     db "UPDATE other_table SET name = ${name} WHERE column = value" do
       action :execute
@@ -320,14 +320,14 @@ This does mean that the following limitation exists:
 ``` ruby
 Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
 
-  task :my_task
+  task :my_task do
     db "SELECT id, name FROM table WHERE column = value" do
       action :select_one
       field "name", :name
     end
   end
 
-  task :output_task
+  task :output_task do
     after :my_task
     db "UPDATE other_table SET name = ${name} WHERE column = value" do
       action :execute
@@ -368,5 +368,92 @@ Pidl::Action.
 
 # Error Handling
 
+Error handling in Pidl is largely based around cleaning up when an error
+occurs rather than preventing or recovering from them. Of course, being
+Ruby underneath, the normal error handlers can be used if you prefer, but
+there are some built in constructs to assist in this regard.
+
+## Error Handler in a Pipeline
+
+At the Pidl::Pipeline level, tasks are run and may raise errors due to many
+external factors. It is possible to add an error handler task that cleans
+up anything that might get left behind in an error situatation. This is
+done with the `on_error` command.
+
+``` ruby
+Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
+
+  task :setup do
+    db "create_table.sql" do
+      action :execute_file
+    end
+
+    db "fixture.sql" do
+      action :import_from_file
+      table "staging"
+    end
+  end
+
+  task :export do
+    db "procedure.sql" do
+      action :execute_file
+    end
+  end
+
+  on_error do
+    db "DROP TABLE staging" do
+      action :execute
+    end
+  end
+end
+```
+
+In this contrived example, a file full of data is imported and then a
+procedure is run on it. If something goes wrong, the staging table needs to
+be removed. The task described by the `on_error` command does just that,
+and is only run if something raises an error and forces the pipeline to
+terminate.
+
+## Error Handler in an Action
+
+Consider our previous contrived example. This time, instead of deleting the
+staging table, it should be left for future debugging. However, if the
+import fails the pipeline should exit gracefully because there is nothing
+to do.
+
+``` ruby
+Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
+
+  task :setup do
+    db "create_table.sql" do
+      action :execute_file
+    end
+
+    db "fixture.sql" do
+      action :import_from_file
+      table "staging"
+      on_error :exit
+    end
+  end
+
+  task :export do
+    db "procedure.sql" do
+      action :execute_file
+    end
+  end
+end
+```
+
+The `on_error` command within an action takes on a different meaning. It
+allows a flag to be set to tell it how to behave. The possible options are:
+
+`:raise`
+: Raise an error (this is the default)
+
+`:exit`
+: Exit the pipeline cleanly
+
+`:continue`
+: Ignore the error and continue
 
 
