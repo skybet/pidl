@@ -337,7 +337,6 @@ module Pidl
     # :call-seq:
     #   run
     def run
-      puts "#{indent}#{self}"
     end
 
     # See Pidl::PidlBase#dry_run
