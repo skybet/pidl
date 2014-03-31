@@ -13,8 +13,20 @@ module Pidl
       end
     end
 
+    def evaluated?
+      if @promise.respond_to? :call
+        not @value.nil?
+      else
+        true
+      end
+    end
+
     def value
       @value || __eval
+    end
+
+    def to_s
+      value.to_s
     end
 
     private

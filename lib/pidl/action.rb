@@ -1,4 +1,3 @@
-require 'lazy/threadsafe'
 require_relative 'base'
 
 module Pidl
@@ -289,24 +288,24 @@ module Pidl
         s = "@#{name}".to_sym
         send :define_method, name do |key, value=nil, &block|
 
-        # Raise an error if both specified
-        if not value.nil? and block.respond_to? :call
-          raise RuntimeError.new "Cannot accept value and block in lazy hashsetter"
-        end
+          # Raise an error if both specified
+          if not value.nil? and block.respond_to? :call
+            raise RuntimeError.new "Cannot accept value and block in lazy hashsetter"
+          end
 
-        # If no value provided, default to true
-        if value.nil? and not block.respond_to? :call
-          logger.warn "No value specified in call to \##{name}"
-          return
-        end
+          # If no value provided, default to true
+          if value.nil? and not block.respond_to? :call
+            logger.warn "No value specified in call to \##{name}"
+            return
+          end
 
-        v = instance_variable_get s
-        value = get_lazy_wrapper value, &block
-        if v.nil?
-          instance_variable_set s, { key => value }
-        else
-          v[key] = value
-        end
+          v = instance_variable_get s
+          value = get_lazy_wrapper value, &block
+          if v.nil?
+            instance_variable_set s, { key => value }
+          else
+            v[key] = value
+          end
         end
       end
     end
@@ -424,7 +423,7 @@ module Pidl
     # Wrap a lazy value in a suitable promise
     #
     # [Symbol]
-    #   Get a promise from @context
+    #   Create a new promise that gets from @context
     #
     # [Proc]
     #   Create a new promise that evaluates on demand
@@ -433,19 +432,17 @@ module Pidl
     #   Create a new promise that evaluates on demand
     #
     # [Other]
-    #   Do not create a promise; already evaluated
+    #   Create a promise that's already evaluated
     #
     def get_lazy_wrapper value, &block
       if value.is_a? Symbol
-        get(value)
-      elsif value.respond_to? :call
-        Lazy::promise do
-          value.call
+        Promise.new do
+          get(value)
         end
       elsif block_given?
-        Lazy::promise &block
+        Promise.new &block
       else
-        value
+        Promise.new value
       end
     end
 

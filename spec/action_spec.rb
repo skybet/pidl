@@ -171,7 +171,7 @@ describe Action do
       a = action do
         parameter 123
       end
-      a.get_parameter.should eq(123)
+      a.get_parameter.value.should eq(123)
     end
 
     it "overwrites previous values" do
@@ -179,7 +179,7 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.get_parameter.should eq(456)
+      a.get_parameter.value.should eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -187,14 +187,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.get_parameter.should eq(123)
+      a.get_parameter.value.should eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.get_parameter.should eq(1)
+      a.get_parameter.value.should eq(1)
     end
 
     it "evaluates a block" do
@@ -203,7 +203,7 @@ describe Action do
           1
         end
       end
-      a.get_parameter.should eq(1)
+      a.get_parameter.value.should eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -213,7 +213,7 @@ describe Action do
         end
       end
       @context.set :path, "/tmp/my/path"
-      a.get_parameter.should eq("/tmp/my/path/filename")
+      a.get_parameter.value.should eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do
@@ -315,14 +315,16 @@ describe Action do
       a = action do
         parameter 123
       end
-      a.get_parameter.should eq([ 123 ])
+      a.get_parameter[0].value.should eq(123)
     end
 
     it "returns multiple params as an array" do
       a = action do
         parameter 123, "string", ["array"]
       end
-      a.get_parameter.should eq([ 123, "string", ["array"] ])
+      a.get_parameter[0].value.should eq(123)
+      a.get_parameter[1].value.should eq("string")
+      a.get_parameter[2].value.should eq(["array"])
     end
 
     it "overwrites previous values" do
@@ -330,7 +332,7 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.get_parameter.should eq([ 456 ])
+      a.get_parameter[0].value.should eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -338,14 +340,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.get_parameter.should eq([ 123 ])
+      a.get_parameter[0].value.should eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.get_parameter.should eq([ 1 ])
+      a.get_parameter[0].value.should eq(1)
     end
 
     it "evaluates a block" do
@@ -354,7 +356,7 @@ describe Action do
           1
         end
       end
-      a.get_parameter.should eq([ 1 ])
+      a.get_parameter[0].value.should eq(1)
     end
 
     it "puts block at the end of the array" do
@@ -363,17 +365,18 @@ describe Action do
           2
         end
       end
-      a.get_parameter.should eq([ 1, 2 ])
+      a.get_parameter[0].value.should eq(1)
+      a.get_parameter[1].value.should eq(2)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
+      @context.set :path, "/tmp/my/path"
       a = action do
         parameter do
           "#{get(:path)}/filename"
         end
       end
-      @context.set :path, "/tmp/my/path"
-      a.get_parameter.should eq([ "/tmp/my/path/filename" ])
+      a.get_parameter[0].value.should eq("/tmp/my/path/filename")
     end
 
   end
@@ -459,7 +462,7 @@ describe Action do
       a = action do
         parameter 123
       end
-      a.get_parameter.should eq([ 123 ])
+      a.get_parameter[0].value.should eq(123)
     end
 
     it "appends to previous values" do
@@ -467,7 +470,8 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.get_parameter.should eq([ 123, 456 ])
+      a.get_parameter[0].value.should eq(123)
+      a.get_parameter[1].value.should eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -475,14 +479,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.get_parameter.should eq([ 123 ])
+      a.get_parameter[0].value.should eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.get_parameter.should eq([ 1 ])
+      a.get_parameter[0].value.should eq(1)
     end
 
     it "evaluates a block" do
@@ -491,17 +495,17 @@ describe Action do
           1
         end
       end
-      a.get_parameter.should eq([ 1 ])
+      a.get_parameter[0].value.should eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
+      @context.set :path, "/tmp/my/path"
       a = action do
         parameter do
           "#{get(:path)}/filename"
         end
       end
-      @context.set :path, "/tmp/my/path"
-      a.get_parameter.should eq([ "/tmp/my/path/filename" ])
+      a.get_parameter[0].value.should eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do
@@ -605,7 +609,7 @@ describe Action do
       a = action do
         parameter :test, 123
       end
-      a.get_parameter.should eq({ test: 123 })
+      a.get_parameter[:test].value.should eq(123)
     end
 
     it "overwrites previous values" do
@@ -613,7 +617,7 @@ describe Action do
         parameter :one, 123
         parameter :one, 456
       end
-      a.get_parameter.should eq({ one: 456 })
+      a.get_parameter[:one].value.should eq(456)
     end
 
     it "adds multiple values" do
@@ -621,7 +625,8 @@ describe Action do
         parameter :one, 1
         parameter :two, 2
       end
-      a.get_parameter.should eq({ one: 1, two: 2 })
+      a.get_parameter[:one].value.should eq(1)
+      a.get_parameter[:two].value.should eq(2)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -629,14 +634,14 @@ describe Action do
       a = action do
         parameter :test, :symbol
       end
-      a.get_parameter.should eq({ test: 123 })
+      a.get_parameter[:test].value.should eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter :test, lambda { 1 }
       end
-      a.get_parameter.should eq({ test: 1 })
+      a.get_parameter[:test].value.should eq(1)
     end
 
     it "evaluates a block" do
@@ -645,7 +650,7 @@ describe Action do
           1
         end
       end
-      a.get_parameter.should eq({ test: 1 })
+      a.get_parameter[:test].value.should eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -655,7 +660,7 @@ describe Action do
         end
       end
       @context.set :path, "/tmp/my/path"
-      a.get_parameter.should eq({ test: "/tmp/my/path/filename" })
+      a.get_parameter[:test].value.should eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do

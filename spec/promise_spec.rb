@@ -69,4 +69,38 @@ describe Promise do
 
   end
 
+  describe "#to_s" do
+
+    it "evaluates if cast to string" do
+      p = Promise.new lambda { "hello" }
+      p.to_s.should eq("hello")
+    end
+
+    it "evaluates if coerced to string" do
+      p = Promise.new lambda { "hello" }
+      "#{p}".should eq("hello")
+    end
+
+  end
+
+  describe "#evaluated?" do
+
+    it "returns false if not yet evaluated" do
+      p = Promise.new lambda { "hello" }
+      p.evaluated?.should eq(false)
+    end
+
+    it "returns true if evaluated" do
+      p = Promise.new lambda { "hello" }
+      p.value
+      p.evaluated?.should eq(true)
+    end
+
+    it "always returns true for simple values" do
+      p = Promise.new "hello"
+      p.evaluated?.should eq(true)
+    end
+
+  end
+
 end
