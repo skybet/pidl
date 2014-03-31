@@ -40,31 +40,29 @@ module Pidl
     #   A simple value setter, accepts one argument and stores it
     #
     # #setterlazy::
-    #   Like #setter, but evaluates the value lazily and accepts lambdas and
-    #   blocks
+    #   Like #setter, but uses Pidl::Promise and accepts lambdas and blocks
     #
     # #vargsetter::
     #   Like #setter, but accepts multiple arguments and stores them as an
     #   array
     #
     # #vargsetterlazy::
-    #   Like #vargsetter, but evaluates all arguments lazily and accepts
+    #   Like #vargsetter, but uses Pidl::Promise and accepts
     #   lambdas
     #
     # #arraysetter::
     #   Like #setter, but stores values in an array and allows multiple calls
     #
     # #arraysetterlazy::
-    #   Like #arraysetter, but evaluates each argument lazily and accepts
-    #   lambdas and blocks
+    #   Like #arraysetter, but uses Pidl::Promise and accepts lambdas and blocks
     #
     # #hashsetter::
     #   A simple key/value setter, accepts a key and a value and stores an
     #   internal hash. Allows multiple calls and overwrites duplicate keys.
     #
     # #hashsetterlazy::
-    #   Like #hashsetter, but lazily evaluates the values. Keys are already
-    #   evaluated immediately. Accepts lambdas and blocks.
+    #   Like #hashsetter, but uses Pidl::Promise. Keys are not lazily
+    #   evaluated. Accepts lambdas and blocks.
     # -------------------------------------------------------------------------
 
     # Create a unary, non-repeatable DSL command

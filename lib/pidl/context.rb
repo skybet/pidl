@@ -6,28 +6,6 @@ module Pidl
   # store for use within a whole pipeline, shared amongst all entities. This
   # allows passing of values between actions, tasks and pipelines simple.
   #
-  # All requests to retrieve values are lazily evaluated. This means that it is
-  # possible to retrieve a value and pass it around, but the value will not
-  # actually be retrieved until it is specifically requested by attempting to
-  # evaluate or interrogate the value. This makes it possible to retrieve
-  # values that have not yet been inserted. For example:
-  #
-  #   task :example_task do
-  #     first_action do
-  #       do_deferred_thing_and_store_as :my_key
-  #     end
-  #     second_action do
-  #       do_deferred_thing get(:my_key)
-  #     end
-  #   end
-  #
-  # In this scenario, +:my_key+ is not stored until +first_action+ is run.
-  # However, +second_action+ retrieves +:my_key+ and passes it to
-  # +do_deferred_thing+ during the initial parse phase. This only works because
-  # the value passed to +do_deferred_thing+ is not evaluated until the
-  # +do_deferred_thing+ action is run and it requests the value of the object.
-  # Until then it is just blindly stored.
-  #
   class Context
 
     # Create a new, empty context
@@ -84,8 +62,6 @@ module Pidl
     end
 
     # Retrieve the given key from the context and return the value
-    #
-    # The value is lazily evaluated and synchronized.
     #
     # :call-seq:
     #   get key -> mixed

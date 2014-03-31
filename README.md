@@ -282,10 +282,10 @@ end.run
 
 ## A Note On Laziness
 
-The Pidl::Context class makes use of lazy evaluation to provide a way to
-pass values around during the parse phase of the pipeline definition, but
-only realise them during the run phase. Consider the example of actions
-using the context.
+The Pidl::Action class makes use of lazy evaluation via Pidl::Promise to
+provide a way to pass values around during the parse phase of the pipeline
+definition, but only realise them during the run phase. Consider the
+example of actions using the context.
 
 ``` ruby
 Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
@@ -303,17 +303,17 @@ Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
       action :execute
 
       # The hypothetical #param method sets the query parameter
-      param "name", get(:name)
+      param "name", lambda { get(:name) }
   end
 
 end
 ```
 
-The call to `get(:name)` in `:output_task` returns a promise. When the
-pipeline is parsed, there is no `:name` key in the context. That only
-appears when the query in `:my_task` is run. When the action in
-`:output_task` is run, however, and the query is parsed, there is a `:name`
-key in the context so the correct value is retrieved.
+The call to `get(:name)` in `:output_task` is passed as a lambda, and it
+wrapped in a promise. When the pipeline is parsed, there is no `:name` key
+in the context. That only appears when the query in `:my_task` is run. When
+the action in `:output_task` is run, however, and the query is parsed,
+there is a `:name` key in the context so the correct value is retrieved.
 
 This does mean that the following limitation exists:
 
@@ -337,7 +337,7 @@ Pidl::Pipeline.new "My Pipeline", Pidl::Context.new() do
       param "name", "Name: #{ get(:name) }"
 
       # The proper way to do it:
-      param "name" { "Name: #{ get(:name) }" }
+      param "name", lambda { "Name: #{ get(:name) }" }
     end
   end
 end
