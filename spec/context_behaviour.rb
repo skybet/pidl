@@ -16,14 +16,7 @@ shared_examples_for "Context" do
       Lazy::demand(v).should eq(nil)
     end
 
-    it "defers evaluation of a get if set has not been called yet" do
-      c = context_instance
-      v = c.get(:mykey)
-      c.set(:mykey, "myval")
-      v.should eq("myval")
-    end
-
-    it "returns the whole context has" do
+    it "returns the whole context hash" do
       c = context_instance
       c.set(:mykey, "myval")
       c.set(:myotherkey, "myotherval")

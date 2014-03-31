@@ -95,11 +95,9 @@ module Pidl
     #
     def get key
       logger.debug "Promising key [#{key}]"
-      return Lazy::promise do
-        @mutex.synchronize do
-          logger.debug "Evaluated [#{key}] as [#{@context[key]}]"
-          @context[key]
-        end
+      @mutex.synchronize do
+        logger.debug "Evaluated [#{key}] as [#{@context[key]}]"
+        @context[key]
       end
     end
 
