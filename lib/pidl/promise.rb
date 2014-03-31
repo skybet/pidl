@@ -1,7 +1,19 @@
 module Pidl
 
+  # Simple lazy evaluation wrapper
+  #
+  # Provide a way to handle different lazy evaluation scenarios
+  # through a single interface. Accepts "dumb" (non-callable) values
+  # as well as lambdas and blocks. Evaluates them only when #value
+  # is called explicitly, or implicitly during string coercion.
+  #
   class Promise
 
+    # Create a new Promise
+    #
+    # Accepts a dumb value, lambda or block. Raises ArgumentError
+    # if a value and a block are both provided.
+    #
     def initialize v=nil, &block
       @promise = v
       @value = nil
@@ -13,6 +25,10 @@ module Pidl
       end
     end
 
+    # True if evaluation has already occurred
+    #
+    # Always true for dumb values. Only true for callables after
+    # they are evaluated the first time.
     def evaluated?
       if @promise.respond_to? :call
         not @value.nil?
@@ -21,14 +37,25 @@ module Pidl
       end
     end
 
+    # Return the evaluated value of this Promise
+    #
+    # Evaluates if no already evaluated
+    #
     def value
       @value || __eval
     end
 
+    # Convert to string
+    #
+    # Calls #value implicitly
+    #
     def to_str
       to_s
     end
 
+    # Return string representation
+    #
+    # Calls #value implicitly
     def to_s
       value.to_s
     end
