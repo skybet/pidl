@@ -1,6 +1,3 @@
-require 'thread'
-require 'lazy'
-
 module Pidl
 
   # Provide shared context to DSL entities
