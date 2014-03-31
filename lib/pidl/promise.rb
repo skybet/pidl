@@ -25,6 +25,10 @@ module Pidl
       @value || __eval
     end
 
+    def to_str
+      to_s
+    end
+
     def to_s
       value.to_s
     end

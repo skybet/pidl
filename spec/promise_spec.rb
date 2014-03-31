@@ -81,6 +81,12 @@ describe Promise do
       "#{p}".should eq("hello")
     end
 
+    it "evaluates if automatically converted to string" do
+      p = Promise.new lambda { "world" }
+      a = "hello " << p
+      a.should eq("hello world")
+    end
+
   end
 
   describe "#evaluated?" do
