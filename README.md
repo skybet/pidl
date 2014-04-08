@@ -1,9 +1,9 @@
 # Pidl
 
-The PIpeline Definition Language provides a simple way to script pipelines of
-work to do just about anything. Each pipeline is broken down into tasks, and
-each task is broken down into actions. The actions can be built quickly and
-easily and perform just about any task imaginable.
+The PIpeline Definition Language provides a simple way to script pipelines
+of work into discrete tasks that can be run in a managed way. The language
+is extensible and allows for many different custom behaviours to be
+injected at run-time so it can be configured precisely to the job at hand.
 
 # Getting Started
 
