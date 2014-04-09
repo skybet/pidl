@@ -29,7 +29,7 @@ module Pidl
     def add_custom_action action_sym, type
       define_singleton_method action_sym do |name = nil, &block|
         name ||= "#{@name}.#{action_sym}"
-        a = type.new(name, @context, &block)
+        a = type.new(name, @context, { logger: logger }, &block)
         add_action a
       end
     end

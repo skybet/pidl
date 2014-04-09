@@ -332,7 +332,7 @@ module Pidl
     # Task for simplicity and expandability.
     #
     def create_task name, context, actions, &block
-      Task.new name, context do
+      Task.new name, context, logger: logger do
         actions.each { |name, type|
           add_custom_action name, type
         }
