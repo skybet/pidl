@@ -1,5 +1,3 @@
-require_relative 'event'
-
 module Pidl
 
   # Provide shared context to DSL entities
@@ -9,7 +7,6 @@ module Pidl
   # allows passing of values between actions, tasks and pipelines simple.
   #
   class Context
-    include EventEmitter
 
     # Create a new, empty context
     #

@@ -1,5 +1,6 @@
 require 'lazy'
 require_relative 'fakelogger'
+require_relative 'event'
 
 module Pidl
 
@@ -27,6 +28,7 @@ module Pidl
   # handling dependencies between entities.
   #
   class PidlBase
+    include EventEmitter
 
     # The given name of the DSL entity
     #

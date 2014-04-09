@@ -1,4 +1,5 @@
 require 'lazy'
+require 'thread'
 require 'date'
 require_relative 'base'
 require_relative 'task'
@@ -162,7 +163,7 @@ module Pidl
         plan.each do |group|
 
           # Run single or multithreaded
-          if @single_thread or group.size < 2
+          if @single_thread
             logger.debug "Running task group [#{group}] consecutively"
             run_group_series group
           else
@@ -207,24 +208,14 @@ module Pidl
     # :call-seq:
     #   run_one
     #
-    def run_one task
+    def run_one t
       emit :pipeline_start, @name
       pipeline_start = Time.now
-      t = task
-      if @tasks[t]
-        # Start listening
-        forwarder = create_emit_forwarder
-        task.on :task_start, &forwarder
-        task.on :task_end, &forwarder
-
-        # Run the task
-        @tasks[t].run
-
-        # Stop listening
-        task.removeListener :task_start, forwarder
-        task.removeListener :task_end, forwarder
+      task = @tasks[t]
+      if task
+        task.run
       else
-        raise RuntimeError.new "Cannot run invalid task [#{task}]"
+        raise RuntimeError.new "Cannot run invalid task [#{t}]"
       end
       pipeline_end = Time.now
       duration = ((pipeline_end - pipeline_start) * 1000).to_i
@@ -280,8 +271,22 @@ module Pidl
 
     private
 
-    def create_emit_forwarder
+    def emit_forwarder
       lambda { |*args| emit *args }
+    end
+
+    def bind_task_events task, handler
+      task.on :task_start, handler
+      task.on :task_end, handler
+      task.on :action_start, handler
+      task.on :action_end, handler
+    end
+
+    def unbind_task_events task, handler
+      task.removeListener :task_start, handler
+      task.removeListener :task_end, handler
+      task.removeListener :action_start, handler
+      task.removeListener :action_end, handler
     end
 
     def attempt_cleanup
@@ -343,7 +348,16 @@ module Pidl
       group.each do |t|
         if not @tasks[t].skip?
           logger.info "Running task [#{t}]"
+
+          # Listen
+          forwarder = emit_forwarder
+          bind_task_events @tasks[t], forwarder
+
+          # Run
           @tasks[t].run
+
+          # Stop listening
+          unbind_task_events @tasks[t], forwarder
         else
           logger.debug "Skipping task [#{t}]"
         end
@@ -360,11 +374,30 @@ module Pidl
     # that makes it very easy to reason about what is happening now and next.
     #
     def run_group_and_wait group
+      mutex = Mutex.new
+      events = []
+
+      # Capture events emitted on other threads safely
+      handler = lambda { |*args|
+        mutex.synchronize {
+          events.push args
+        }
+      }
+
+      # Run the tasks
       futures = group.map do
         |t| Lazy::future do
           if not @tasks[t].skip?
             logger.info "Running task [#{t}]"
+
+            # Listen
+            bind_task_events @tasks[t], handler
+
+            # Run
             @tasks[t].run
+
+            # Stop listening
+            unbind_task_events @tasks[t], handler
           else
             logger.debug "Skipping task [#{t}]"
           end
@@ -374,6 +407,11 @@ module Pidl
         logger.debug "Waiting for #{ix + 1} of #{futures.size}"
         Lazy::demand f
       end
+
+      # Emit captured events
+      events.each { |args|
+        emit *args
+      }
       logger.debug "All threads complete"
     end
   end

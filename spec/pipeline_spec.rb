@@ -513,9 +513,9 @@ describe Pipeline do
       probe_start = lambda { }
       probe_end = lambda { }
 
-      expect(probe_start).to receive(:call) do |name|
+      expect(probe_start).to receive(:call) do |event, name|
         name.should eq(:name_of_job)
-        expect(probe_end).to receive(:call) do |name, duration|
+        expect(probe_end).to receive(:call) do |event, name, duration|
           name.should eq(:name_of_job)
           duration.should > 0
         end
@@ -542,19 +542,19 @@ describe Pipeline do
       probe_start = lambda { }
       probe_end = lambda { }
 
-      expect(probe_start).to receive(:call) do |name|
+      expect(probe_start).to receive(:call) do |event, name|
         name.should eq(:firsttask)
 
-        expect(probe_end).to receive(:call) do |name, duration|
+        expect(probe_end).to receive(:call) do |event, name, duration|
           name.should eq(:firsttask)
-          duration.should > 0
+          duration.is_a?(Integer).should eq(true)
 
-          expect(probe_start).to receive(:call) do |name|
+          expect(probe_start).to receive(:call) do |event, name|
             name.should eq(:secondtask)
 
-            expect(probe_end).to receive(:call) do |name, duration|
+            expect(probe_end).to receive(:call) do |event, name, duration|
               name.should eq(:secondtask)
-              duration.should > 0
+              duration.is_a?(Integer).should eq(true)
             end
           end
         end
@@ -565,7 +565,7 @@ describe Pipeline do
       p.run
     end
 
-    it "emits ection_start and action_end events when each action starts and completes" do
+    it "emits action_start and action_end events when each action starts and completes" do
       p = get_pipeline
 
       t1 = task :firsttask do
@@ -577,19 +577,19 @@ describe Pipeline do
       probe_start = lambda { }
       probe_end = lambda { }
 
-      expect(probe_start).to receive(:call) do |name|
+      expect(probe_start).to receive(:call) do |event, name|
         name.should eq("Action:action 1:test")
 
-        expect(probe_end).to receive(:call) do |name, duration|
+        expect(probe_end).to receive(:call) do |event, name, duration|
           name.should eq("Action:action 1:test")
-          duration.should > 0
+          duration.is_a?(Integer).should eq(true)
 
-          expect(probe_start).to receive(:call) do |name|
+          expect(probe_start).to receive(:call) do |event, name|
             name.should eq("Action:action 2:test")
 
-            expect(probe_end).to receive(:call) do |name, duration|
+            expect(probe_end).to receive(:call) do |event, name, duration|
               name.should eq("Action:action 2:test")
-              duration.should > 0
+              duration.is_a?(Integer).should eq(true)
             end
           end
         end

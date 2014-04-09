@@ -1,11 +1,6 @@
 require 'event_behaviour'
 
 shared_examples_for "Context" do
-  it_behaves_like "EventEmitter"
-
-  def emitter_instance
-    context_instance
-  end
 
   describe "Key/Value Store" do
 

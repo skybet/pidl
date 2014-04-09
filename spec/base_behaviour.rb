@@ -3,6 +3,7 @@ require 'context_behaviour'
 
 shared_examples_for "PidlBase" do
   it_behaves_like "Context"
+  it_behaves_like "EventEmitter"
 
   def instance options={}, &block
     described_class.new :name_of_instance, @context, options, &block
@@ -11,6 +12,10 @@ shared_examples_for "PidlBase" do
   def context_instance *args
     context = Context.send :new, *args
     described_class.new :name_of_instance, context do; end
+  end
+
+  def emitter_instance
+    context_instance
   end
 
   before(:each) do

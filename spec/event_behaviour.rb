@@ -5,18 +5,45 @@ shared_examples_for "EventEmitter" do
     it "subscribes a single listener and receives an event" do
       e = emitter_instance
       probe = lambda { }
-      probe.should_receive :call
+      probe.should_receive(:call).with(:test)
 
       e.on :test, &probe
       e.emit :test
     end
 
+    it "subscribes a single listener with a lambda and receives an event" do
+      e = emitter_instance
+      probe = lambda { }
+      probe.should_receive(:call).with(:test)
+
+      e.on :test, probe
+      e.emit :test
+    end
+
+    it "raises an error if a lambda and block is provided" do
+      e = emitter_instance
+      probe = lambda { }
+
+      expect do
+        e.on :test, probe do; end
+      end.to raise_error
+    end
+
+    it "raises an error if handler is not callable" do
+      e = emitter_instance
+      probe = "test"
+
+      expect do
+        e.on :test, probe
+      end.to raise_error
+    end
+
     it "subscribes multiple listeners and all receive an event" do
       e = emitter_instance
       probe1 = lambda {}
-      probe1.should_receive :call
+      probe1.should_receive(:call).with(:test)
       probe2 = lambda {}
-      probe2.should_receive :call
+      probe2.should_receive(:call).with(:test)
 
       e.on :test, &probe1
       e.on :test, &probe2
@@ -26,7 +53,7 @@ shared_examples_for "EventEmitter" do
     it "sends parameters via emit" do
       e = emitter_instance
       probe = lambda { }
-      probe.should_receive(:call).with('a', 1)
+      probe.should_receive(:call).with(:test, 'a', 1)
 
       e.on :test, &probe
       e.emit :test, 'a', 1
@@ -35,9 +62,9 @@ shared_examples_for "EventEmitter" do
     it "sends parameters to all subscribers via emit" do
       e = emitter_instance
       probe1 = lambda {}
-      probe1.should_receive(:call).with('a', 1)
+      probe1.should_receive(:call).with(:test, 'a', 1)
       probe2 = lambda {}
-      probe2.should_receive(:call).with('a', 1)
+      probe2.should_receive(:call).with(:test, 'a', 1)
 
       e.on :test, &probe1
       e.on :test, &probe2
