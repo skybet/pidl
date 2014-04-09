@@ -71,14 +71,18 @@ module Pidl
     #
     def run
       task_start = Time.now
+      emit :task_start, @name
       @actions.each do |action|
         begin
           if not action.skip?
             logger.info "Running action [#{action.to_s}]"
             action_start = Time.now
+            emit :action_start, action.to_s
             action.run
             action_end = Time.now
-            logger.info "[TIMER] #{action.to_s} completed in [#{((action_end - action_start) * 1000).to_i}] ms"
+            duration = ((action_end - action_start) * 1000).to_i
+            logger.debug "[TIMER] #{action.to_s} completed in [#{duration}] ms"
+            emit :action_end, action.to_s, duration
           else
             logger.debug "Skipping action [#{action.to_s}]"
           end
@@ -94,7 +98,9 @@ module Pidl
         end
       end
       task_end = Time.now
-      logger.info "[TIMER] #{to_s} completed in [#{((task_end - task_start) * 1000).to_i}] ms"
+      duration = ((task_end - task_start) * 1000).to_i
+      logger.debug "#{to_s} completed in [#{duration}] ms"
+      emit :task_end, @name, duration
     end
 
     # Get an array of all configured actions

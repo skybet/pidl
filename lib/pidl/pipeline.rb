@@ -104,7 +104,7 @@ module Pidl
         raise ArgumentError.new "Type #{name} already exists"
       end
       logger.debug "Created task [#{name}]"
-      @tasks[name] = create_task(name, @context, @actions, &block)
+      add_task(create_task name, @context, @actions, &block)
     end
 
     # Create a special task for cleaning up after errors and adds it to #error_handler
@@ -158,6 +158,7 @@ module Pidl
       end
 
       begin
+        emit :pipeline_start, @name
         plan.each do |group|
 
           # Run single or multithreaded
@@ -192,7 +193,9 @@ module Pidl
       end
 
       pipeline_end = Time.now
-      logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
+      duration = ((pipeline_end - pipeline_start) * 1000).to_i
+      logger.debug "#{to_s} completed in [#{duration}] ms"
+      emit :pipeline_end, @name, duration
     end
 
     # Run a single named task
@@ -205,15 +208,28 @@ module Pidl
     #   run_one
     #
     def run_one task
+      emit :pipeline_start, @name
       pipeline_start = Time.now
       t = task
       if @tasks[t]
+        # Start listening
+        forwarder = create_emit_forwarder
+        task.on :task_start, &forwarder
+        task.on :task_end, &forwarder
+
+        # Run the task
         @tasks[t].run
+
+        # Stop listening
+        task.removeListener :task_start, forwarder
+        task.removeListener :task_end, forwarder
       else
         raise RuntimeError.new "Cannot run invalid task [#{task}]"
       end
       pipeline_end = Time.now
-      logger.info "[TIMER] #{to_s} completed in [#{((pipeline_end - pipeline_start) * 1000).to_i}] ms"
+      duration = ((pipeline_end - pipeline_start) * 1000).to_i
+      logger.info "[TIMER] #{to_s} completed in [#{duration}] ms"
+      emit :pipeline_end, @name, duration
     end
 
     # Generate an explain plan indicating the order of tasks
@@ -263,6 +279,10 @@ module Pidl
     end
 
     private
+
+    def create_emit_forwarder
+      lambda { |*args| emit *args }
+    end
 
     def attempt_cleanup
       begin

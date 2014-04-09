@@ -509,6 +509,97 @@ describe Pipeline do
       p.run
     end
 
+    it "emits pipeline_start and pipeline_end events when the pipeline starts and completes" do
+      probe_start = lambda { }
+      probe_end = lambda { }
+
+      expect(probe_start).to receive(:call) do |name|
+        name.should eq(:name_of_job)
+        expect(probe_end).to receive(:call) do |name, duration|
+          name.should eq(:name_of_job)
+          duration.should > 0
+        end
+      end
+
+      p = get_pipeline
+      p.on :pipeline_start, &probe_start
+      p.on :pipeline_end, &probe_end
+      p.run
+    end
+
+    it "emits task_start and task_end events when each task starts and completes" do
+      p = get_pipeline
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      t2 = task :secondtask do
+        after :firsttask
+      end
+      p.add_task(t2)
+
+      probe_start = lambda { }
+      probe_end = lambda { }
+
+      expect(probe_start).to receive(:call) do |name|
+        name.should eq(:firsttask)
+
+        expect(probe_end).to receive(:call) do |name, duration|
+          name.should eq(:firsttask)
+          duration.should > 0
+
+          expect(probe_start).to receive(:call) do |name|
+            name.should eq(:secondtask)
+
+            expect(probe_end).to receive(:call) do |name, duration|
+              name.should eq(:secondtask)
+              duration.should > 0
+            end
+          end
+        end
+      end
+
+      p.on :task_start, &probe_start
+      p.on :task_end, &probe_end
+      p.run
+    end
+
+    it "emits ection_start and action_end events when each action starts and completes" do
+      p = get_pipeline
+
+      t1 = task :firsttask do
+      end
+      t1.add_action Action.new("action 1", @context) { action :test }
+      t1.add_action Action.new("action 2", @context) { action :test }
+      p.add_task(t1)
+
+      probe_start = lambda { }
+      probe_end = lambda { }
+
+      expect(probe_start).to receive(:call) do |name|
+        name.should eq("Action:action 1:test")
+
+        expect(probe_end).to receive(:call) do |name, duration|
+          name.should eq("Action:action 1:test")
+          duration.should > 0
+
+          expect(probe_start).to receive(:call) do |name|
+            name.should eq("Action:action 2:test")
+
+            expect(probe_end).to receive(:call) do |name, duration|
+              name.should eq("Action:action 2:test")
+              duration.should > 0
+            end
+          end
+        end
+      end
+
+      p.on :action_start, &probe_start
+      p.on :action_end, &probe_end
+      p.run
+    end
+
   end
 
   context "run one" do
