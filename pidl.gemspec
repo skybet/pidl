@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'guard-rspec'
 
   s.add_dependency 'lazy'
-  s.add_dependency 'log4jruby'
   s.add_dependency 'inifile'
   s.add_dependency 'timecop'
 end
