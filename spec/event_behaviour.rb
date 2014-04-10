@@ -80,7 +80,9 @@ shared_examples_for "EventEmitter" do
 
       e.on :test, &probe1
       e.on :test, &probe2
+
       e.removeListener :test, probe1
+
       e.emit :test
     end
 

@@ -70,7 +70,7 @@ module Pidl
     # Unsubscribe a listener from an event
     def removeListener event, listener
       if not subscribers[event].nil?
-        subscribers[event] = subscribers[event].select { |l| l != listener }
+        subscribers[event] = subscribers[event].select { |l| !l.equal?(listener) }
       end
       self
     end

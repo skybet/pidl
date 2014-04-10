@@ -1,7 +1,6 @@
 require 'pidl'
 require 'base_behaviour'
 require 'date'
-require 'timecop'
 
 include Pidl
 
@@ -39,10 +38,15 @@ describe Pipeline do
   describe "run date" do
 
     it "returns the datetime of the start of the test run" do
-      Timecop.freeze(DateTime.parse "2014-03-18T14:31:23+00:00")
+      test_start = DateTime.now.strftime('%s%L').to_i
       i = pipeline do; end
-      i.get(:run_date).iso8601.should eq("2014-03-18T14:31:23+00:00")
-      Timecop.return
+      test_end = DateTime.now.strftime('%s%L').to_i
+
+      # run date should be between the test start and end
+      # times. Easier than faffing with mocking the time.
+      result = i.get(:run_date).strftime('%s%L').to_i
+      result.should >= test_start
+      result.should <= test_end
     end
 
   end
@@ -517,7 +521,7 @@ describe Pipeline do
         name.should eq(:name_of_job)
         expect(probe_end).to receive(:call) do |event, name, duration|
           name.should eq(:name_of_job)
-          duration.should > 0
+          duration.is_a?(Integer).should eq(true)
         end
       end
 
