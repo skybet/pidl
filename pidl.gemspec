@@ -1,11 +1,12 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'pidl/version'
+require 'rake'
+require 'gem_version'
 
 Gem::Specification.new do |s|
   s.name        = 'pidl'
-  s.version       = Pidl::VERSION
+  s.version     = GemVersion.next_version
   s.date        = '2014-03-18'
   s.summary     = 'PIpeline Definition Language'
   s.description = 'DSL for orchestration of parallel dependent pipelines of tasks'
@@ -20,6 +21,8 @@ Gem::Specification.new do |s|
   s.license       = 'MIT'
   #s.platform = 'java'
 
+  s.add_development_dependency 'git'
+  s.add_development_dependency 'gem_spec'
   s.add_development_dependency 'bundler', '~> 1.3'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'

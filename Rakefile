@@ -1,6 +1,7 @@
 require "bundler/gem_tasks"
 require 'rspec/core/rake_task'
 require 'rdoc/task'
+require 'gem_version'
 
 task :default => [:spec]
 
@@ -13,3 +14,9 @@ RDoc::Task.new do |rdoc|
   rdoc.rdoc_files.include('lib/  *.rb', 'lib/pidl/  *.rb')
   rdoc.rdoc_dir = 'doc'
 end
+
+task :bump do
+  GemVersion.increment_version
+  GemVersion.commit_and_push
+end
+
