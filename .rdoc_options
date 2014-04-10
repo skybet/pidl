@@ -4,7 +4,7 @@ static_path: []
 rdoc_include:
 - .
 charset: UTF-8
-exclude: !ruby/regexp /(?-mix:doc\/)|(?-mix:spec\/)|(?-mix:Gemfile)|(?-mix:Guardfile)|(?-mix:LICENSE.txt)|(?-mix:pidl.gemspec)|(?-mix:Rakefile)/
+exclude: !ruby/regexp /(?-mix:doc\/)|(?-mix:bin\/)|(?-mix:spec\/)|(?-mix:Gemfile)|(?-mix:Guardfile)|(?-mix:LICENSE.txt)|(?-mix:pidl.gemspec)|(?-mix:Rakefile)|(?-mix:log4j.properties)|(?-mix:next_gem_version)/
 hyperlink_all: false
 line_numbers: true
 main_page: README.md
