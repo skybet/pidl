@@ -24,6 +24,7 @@ module Pidl
   VERSION="#{GemVersion.next_version}"
 end
 eos
+  end
   GemVersion.commit_and_push do |git|
     git.add "lib/pidl/version.rb"
   end
