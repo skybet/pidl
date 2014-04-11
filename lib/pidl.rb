@@ -5,6 +5,7 @@ require_relative('pidl/promise')
 require_relative('pidl/pipeline')
 require_relative('pidl/task')
 require_relative('pidl/action')
+require_relative('pidl/version')
 
 # The Pidl module.
 #

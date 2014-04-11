@@ -17,6 +17,15 @@ end
 
 task :bump do
   GemVersion.increment_version
-  GemVersion.commit_and_push
+  File.open("lib/pidl/version.rb", 'w') do |f|
+    f.write <<eos
+module Pidl
+  # Current Pidl version
+  VERSION="#{GemVersion.next_version}"
+end
+eos
+  GemVersion.commit_and_push do |git|
+    git.add "lib/pidl/version.rb"
+  end
 end
 
