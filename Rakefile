@@ -16,7 +16,11 @@ RDoc::Task.new do |rdoc|
 end
 
 task :bump do
+
+  # Increment
   GemVersion.increment_version
+
+  # Write a new version file
   File.open("lib/pidl/version.rb", 'w') do |f|
     f.write <<eos
 module Pidl
@@ -25,8 +29,15 @@ module Pidl
 end
 eos
   end
+
+  # Commit everything
   GemVersion.commit_and_push do |git|
     git.add "lib/pidl/version.rb"
   end
+
+  # Make a tag and push it
+  g = Git.open(Dir.pwd, :log=>Logger.new(STDOUT))
+  g.add_tag("pidl-#{GemVersion.next_version}")
+  g.push
 end
 
