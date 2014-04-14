@@ -106,7 +106,8 @@ module Pidl
       # Wrap a symbol in a lambda as it is just
       # an exists check
       if value.is_a? Symbol
-        value = lambda { not get(value).nil? }
+        key = value
+        value = lambda { not get(key).nil? }
       end
 
       @only_if = get_lazy_wrapper value, &block
@@ -118,7 +119,7 @@ module Pidl
     # :call-seq:
     #   skip? -> bool
     def skip?
-      not (@only_if.nil? or @only_if.value)
+      not (@only_if.nil? or !!(@only_if.value))
     end
 
     # Execute the DSL entity.

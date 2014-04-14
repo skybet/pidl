@@ -63,19 +63,19 @@ shared_examples_for "PidlBase" do
       i.skip?.should eq(true)
     end
 
-    it "returns false if a condition for a symbol exists and the symbol does not exist in context" do
+    it "returns true if a condition for a symbol exists and the symbol does not exist in context" do
       i = instance do
         only_if :my_key
       end
       i.skip?.should eq(true)
     end
 
-    it "returns true if a condition for a symbol exists and the symbol exists in context" do
+    it "returns false if a condition for a symbol exists and the symbol exists in context" do
       i = instance do
         only_if :my_key
       end
       i.set :my_key, 'value'
-      i.skip?.should eq(true)
+      i.skip?.should eq(false)
     end
   end
 
