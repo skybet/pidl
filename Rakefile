@@ -38,6 +38,6 @@ eos
   # Make a tag and push it
   g = Git.open(Dir.pwd, :log=>Logger.new(STDOUT))
   g.add_tag("pidl-#{GemVersion.next_version}")
-  g.push("origin", "master", tags: true)
+  g.push(tags: true)
 end
 
