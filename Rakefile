@@ -31,13 +31,8 @@ eos
   end
 
   # Commit everything
-  GemVersion.commit_and_push do |git|
+  GemVersion.commit_and_push nil, "Update version to #{GemVersion.next_version}" do |git|
     git.add "lib/pidl/version.rb"
   end
-
-  # Make a tag and push it
-  g = Git.open(Dir.pwd, :log=>Logger.new(STDOUT))
-  g.add_tag("pidl-#{GemVersion.next_version}")
-  g.push("origin", "master", tags: true)
 end
 
