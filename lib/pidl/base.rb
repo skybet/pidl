@@ -92,11 +92,24 @@ module Pidl
     # :call-seq:
     #   only_if &block
     #
-    def only_if &block
-      if not block.respond_to? :call
-        raise RuntimeError.new "If block should be callable"
+    def only_if value=nil, &block
+      if not value.nil? and block.respond_to? :call
+        raise RuntimeError.new "Cannot accept value and block in condition"
       end
-      @only_if = Lazy::promise &block
+
+      # If no value provided, default to true
+      if value.nil? and not block.respond_to? :call
+        logger.warn "No value specified in condition"
+        return
+      end
+
+      # Wrap a symbol in a lambda as it is just
+      # an exists check
+      if value.is_a? Symbol
+        value = lambda { not get(value).nil? }
+      end
+
+      @only_if = get_lazy_wrapper value, &block
       nil
     end
 
@@ -105,7 +118,7 @@ module Pidl
     # :call-seq:
     #   skip? -> bool
     def skip?
-      not (@only_if.nil? or @only_if)
+      not (@only_if.nil? or @only_if.value)
     end
 
     # Execute the DSL entity.
@@ -136,6 +149,32 @@ module Pidl
     #   basename -> str
     def basename
       self.class.name.split("::").last || ""
+    end
+
+    # Wrap a lazy value in a suitable promise
+    #
+    # [Symbol]
+    #   Create a new promise that gets from @context
+    #
+    # [Proc]
+    #   Create a new promise that evaluates on demand
+    #
+    # [Block]
+    #   Create a new promise that evaluates on demand
+    #
+    # [Other]
+    #   Create a promise that's already evaluated
+    #
+    def get_lazy_wrapper value, &block
+      if value.is_a? Symbol
+        Promise.new do
+          get(value)
+        end
+      elsif block_given?
+        Promise.new &block
+      else
+        Promise.new value
+      end
     end
 
   end

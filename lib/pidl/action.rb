@@ -418,32 +418,6 @@ module Pidl
 
     private
 
-    # Wrap a lazy value in a suitable promise
-    #
-    # [Symbol]
-    #   Create a new promise that gets from @context
-    #
-    # [Proc]
-    #   Create a new promise that evaluates on demand
-    #
-    # [Block]
-    #   Create a new promise that evaluates on demand
-    #
-    # [Other]
-    #   Create a promise that's already evaluated
-    #
-    def get_lazy_wrapper value, &block
-      if value.is_a? Symbol
-        Promise.new do
-          get(value)
-        end
-      elsif block_given?
-        Promise.new &block
-      else
-        Promise.new value
-      end
-    end
-
     # Convert a hash with lazily evaluated values to a string
     #
     def params_to_s params
