@@ -418,21 +418,41 @@ module Pidl
 
     private
 
+    # Convert an array with lazily evaluated values to a string
+    #
+    def array_to_s params
+      p = params.inject([]) { |a, v|
+        begin
+          if not v.instance_of? Pidl::Promise
+            a.push("\"#{v}\"")
+          else
+            v = v.value
+            v = v.nil? ? "?" : "\"#{v}\""
+            a.push(v)
+          end
+        rescue Exception => e
+          a.push("?")
+        end
+        a
+      }
+      p.size > 0 ? "[ #{p.join ", "} ]" : "[ ]"
+    end
+
     # Convert a hash with lazily evaluated values to a string
     #
-    def params_to_s params
+    def hash_to_s params
       p = params.keys.inject([]) { |a, k|
+        key = k.is_a?(Symbol) ? ":#{k}" : "\"#{k}\""
         begin
-          # Check type forces evaluation
-          if not params[k].instance_of? Lazy::Promise
-            a.push("\"#{k}\"=>\"#{params[k]}\"")
+          if not params[k].instance_of? Pidl::Promise
+            a.push("#{key}=>\"#{params[k]}\"")
           else
-            a.push("\"#{k}\"=>\"#{Lazy::demand params[k]}\"")
+            v = params[k].value
+            v = v.nil? ? "?" : "\"#{v}\""
+            a.push("#{key}=>#{v}")
           end
-        rescue Lazy::LazyException
-          a.push("\"#{k}\"=>?")
         rescue Exception => e
-          raise e
+          a.push("#{key}=>?")
         end
         a
       }
