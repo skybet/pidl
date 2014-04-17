@@ -416,9 +416,14 @@ module Pidl
       @on_error == :exit
     end
 
-    private
-
     # Convert an array with lazily evaluated values to a string
+    #
+    # Useful for generating dry_run messages. Replaces all Pidl::Promise
+    # instances with their actual value if at all possible, or a ? if not.
+    #
+    # Output is of the form:
+    #
+    #     [ "val1", "val2" ]
     #
     def array_to_s params
       p = params.inject([]) { |a, v|
@@ -439,6 +444,18 @@ module Pidl
     end
 
     # Convert a hash with lazily evaluated values to a string
+    #
+    # Useful for generating dry_run messages. Replaces all Pidl::Promise
+    # instances with their actual value if at all possible, or a ? if not.
+    #
+    # Output is of the form:
+    #
+    #     { "key1" => "val1", "key2" => "val2" }
+    #
+    # If the type of a key is a Symbol, it is output as such
+    # rather than being wrapped in quotes.
+    #
+    #     { :key1 => "val1", :key2 => "val2" }
     #
     def hash_to_s params
       p = params.keys.inject([]) { |a, k|
