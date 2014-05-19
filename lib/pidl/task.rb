@@ -53,6 +53,7 @@ module Pidl
     def initialize(name, context, flags = {}, &block)
       @actions = []
       @exit = false
+      @exit_code = nil
       super
     end
 
@@ -93,6 +94,7 @@ module Pidl
           elsif action.exit_on_error?
             set(:error, e.message)
             @exit = true
+            set(:exit_code, action.exit_code || 1)
           end
           logger.info e.message
         end
@@ -171,6 +173,15 @@ module Pidl
     #
     def exit?
       @exit
+    end
+
+    # If an exit code has been set by an error handler, return it
+    #
+    # :call-set:
+    #   exit_code -> integer
+    #
+    def exit_code
+      @exit_code
     end
 
     # Display a description of this task and all its actions, indented by 2 spaces

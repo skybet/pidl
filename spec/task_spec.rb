@@ -165,6 +165,27 @@ describe Task do
         t.exit?.should eq(true)
         t.error?.should eq(true)
       end
+
+      it "exits with the specified error code if set" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :exit, 101 })
+        b = t.add_action(action(:action_b) { on_error :exit, 102 })
+        c = t.add_action(action(:action_c) { on_error :exit, 103 })
+
+        expect(a).to receive(:run) do
+          expect(b).to receive(:run).and_raise(RuntimeError.new "Test error") do
+            expect(c).not_to receive(:run)
+          end
+        end
+
+        expect do
+          t.run
+        end.not_to raise_error
+
+        t.exit?.should eq(true)
+        t.error?.should eq(true)
+        @context.get(:exit_code).should eq(102)
+      end
     end
 
     context "on_error :continue" do

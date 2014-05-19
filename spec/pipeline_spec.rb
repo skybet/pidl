@@ -17,6 +17,10 @@ describe Pipeline do
     Task.new name, @context, &block
   end
 
+  def action name, &block
+    Action.new name, @context, &block
+  end
+
   before(:each) do
     @context = Context.new
   end
@@ -186,6 +190,22 @@ describe Pipeline do
 
       expect(p.error_handler).to receive(:run)
       p.run
+    end
+
+    it "sets the exit code if a task exits with an error and code" do
+      p = pipeline actions: { customaction: Action } do
+
+      end
+
+      a = action "test action" do
+        on_error :exit, 101
+      end
+      t = task :task do; end
+      t.add_action(a)
+      p.add_task(t)
+      expect(a).to receive(:run).and_raise(RuntimeError.new "Test")
+      p.run
+      @context.get(:exit_code).should eq(101)
     end
 
   end

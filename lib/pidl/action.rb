@@ -314,6 +314,7 @@ module Pidl
     def initialize(name, context, flags = {}, &block)
       @action = nil
       @on_error = :raise
+      @exit_code = nil
       super
       validate
     end
@@ -372,15 +373,26 @@ module Pidl
     #
     # [:continue] Carry on as if the error did not happen
     #
-    # :call-seq:
-    #   on_error :value
+    # If :exit is specified then a second parameter can be given to
+    # set the exit code.
     #
-    def on_error v
+    # :call-seq:
+    #   on_error :value, exit_code=nil
+    #
+    def on_error v, exit_code=nil
       if not [:raise, :exit, :continue].include? v
         raise RuntimeError.new "Error response [#{v}] is invalid"
       end
       @on_error = v
+      @exit_code = exit_code
       self
+    end
+
+    # If on_error is set to :exit and an exit code was provided,
+    # return that exit code
+    #
+    def exit_code
+      @exit_code
     end
 
     # Convert this action to a string
