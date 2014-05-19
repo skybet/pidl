@@ -96,7 +96,7 @@ module Pidl
             @exit = true
             set(:exit_code, action.exit_code)
           end
-          logger.info e.message
+          logger.error e.message
         end
       end
       task_end = Time.now
