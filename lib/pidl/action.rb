@@ -384,7 +384,7 @@ module Pidl
         raise RuntimeError.new "Error response [#{v}] is invalid"
       end
       @on_error = v
-      @exit_code = exit_code
+      @exit_code = exit_code.to_i != 0 ? exit_code.to_i : 1
       self
     end
 

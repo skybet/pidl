@@ -186,6 +186,38 @@ describe Task do
         t.error?.should eq(true)
         @context.get(:exit_code).should eq(102)
       end
+
+      it "exits with error code 1 if error code is not an integer" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :exit, 'not an int' })
+
+        expect(a).to receive(:run).and_raise(RuntimeError.new "Test error") do
+        end
+
+        expect do
+          t.run
+        end.not_to raise_error
+
+        t.exit?.should eq(true)
+        t.error?.should eq(true)
+        @context.get(:exit_code).should eq(1)
+      end
+
+      it "exits with error code 1 if error code is 0" do
+        t = task do; end
+        a = t.add_action(action(:action_a) { on_error :exit, 0 })
+
+        expect(a).to receive(:run).and_raise(RuntimeError.new "Test error") do
+        end
+
+        expect do
+          t.run
+        end.not_to raise_error
+
+        t.exit?.should eq(true)
+        t.error?.should eq(true)
+        @context.get(:exit_code).should eq(1)
+      end
     end
 
     context "on_error :continue" do

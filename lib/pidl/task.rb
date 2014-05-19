@@ -94,7 +94,7 @@ module Pidl
           elsif action.exit_on_error?
             set(:error, e.message)
             @exit = true
-            set(:exit_code, action.exit_code || 1)
+            set(:exit_code, action.exit_code)
           end
           logger.info e.message
         end
