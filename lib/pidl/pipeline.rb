@@ -83,6 +83,7 @@ module Pidl
       flags = flags || {}
       @single_thread = flags[:single_thread] or false
       @actions = flags[:actions] || {}
+      @skip = flags[:skip] || []
       @tasks = {}
 
       # Sort out the job name and date
@@ -340,13 +341,17 @@ module Pidl
       end
     end
 
+    def skip_task? t
+      @skip.include?(t) or @tasks[t].skip?
+    end
+
     # Run a group of tasks consecutively
     #
     # Use a simple #each call. Order of tasks within a group is not guaranteed.
     #
     def run_group_series group
       group.each do |t|
-        if not @tasks[t].skip?
+        if not skip_task? t
           logger.info "Running task [#{t}]"
 
           # Listen
@@ -387,7 +392,7 @@ module Pidl
       # Run the tasks
       futures = group.map do
         |t| Lazy::future do
-          if not @tasks[t].skip?
+          if not skip_task? t
             logger.info "Running task [#{t}]"
 
             # Listen

@@ -533,6 +533,30 @@ describe Pipeline do
       p.run
     end
 
+    it "skip tasks on request" do
+      p = get_pipeline skip: [:secondtask]
+
+      t1 = task :firsttask do
+      end
+      p.add_task(t1)
+
+      t2 = task :secondtask do
+        after :firsttask
+      end
+      p.add_task(t2)
+
+      t3 = task :thirdtask do
+        after :secondtask
+      end
+      p.add_task(t3)
+
+      expect(t2).not_to receive(:run)
+      expect(t1).to receive(:run) do
+        expect(t3).to receive(:run)
+      end
+      p.run
+    end
+
     it "emits pipeline_start and pipeline_end events when the pipeline starts and completes" do
       probe_start = lambda { }
       probe_end = lambda { }
@@ -674,16 +698,17 @@ describe Pipeline do
   context "multi threaded" do
     it_behaves_like "#run"
 
-    def get_pipeline
-      pipeline do; end
+    def get_pipeline options={}
+      pipeline options do; end
     end
   end
 
   context "single threaded" do
     it_behaves_like "#run"
 
-    def get_pipeline
-      pipeline({ single_thread: true }) do; end
+    def get_pipeline options={}
+      options[:single_thread] = true
+      pipeline options do; end
     end
   end
 
