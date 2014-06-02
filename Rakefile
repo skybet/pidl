@@ -15,24 +15,3 @@ RDoc::Task.new do |rdoc|
   rdoc.rdoc_dir = 'doc'
 end
 
-task :bump do
-
-  # Increment
-  GemVersion.increment_version
-
-  # Write a new version file
-  File.open("lib/pidl/version.rb", 'w') do |f|
-    f.write <<eos
-module Pidl
-  # Current Pidl version
-  VERSION="#{GemVersion.next_version}"
-end
-eos
-  end
-
-  # Commit everything
-  GemVersion.commit_and_push nil, "Update version to #{GemVersion.next_version}" do |git|
-    git.add "lib/pidl/version.rb"
-  end
-end
-

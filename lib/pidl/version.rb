@@ -1,4 +1,5 @@
 module Pidl
   # Current Pidl version
-  VERSION="0.1.30"
+  GEM=Gem.loaded_specs['pidl']
+  VERSION=GEM.nil? ? '[dev]' : GEM.version.to_s
 end

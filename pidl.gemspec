@@ -6,7 +6,7 @@ require 'gem_version'
 
 Gem::Specification.new do |s|
   s.name        = 'pidl'
-  s.version     = GemVersion.next_version
+  s.version     = "0.1.#{ENV['BUILD_NUMBER'] || 'dev'}"
   s.date        = '2014-03-18'
   s.summary     = 'PIpeline Definition Language'
   s.description = 'DSL for orchestration of parallel dependent pipelines of tasks'
