@@ -379,7 +379,7 @@ module Pidl
     # :call-seq:
     #   on_error :value, exit_code=nil
     #
-    def on_error v, exit_code=1
+    def on_error v, exit_code=0
       if not [:raise, :exit, :continue].include? v
         raise RuntimeError.new "Error response [#{v}] is invalid"
       end

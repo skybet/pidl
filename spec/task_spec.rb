@@ -164,6 +164,7 @@ describe Task do
 
         t.exit?.should eq(true)
         t.error?.should eq(true)
+        @context.get(:exit_code).should eq(0)
       end
 
       it "exits with the specified error code if set" do
