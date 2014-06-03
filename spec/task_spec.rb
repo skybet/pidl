@@ -203,7 +203,7 @@ describe Task do
         @context.get(:exit_code).should eq(1)
       end
 
-      it "exits with error code 1 if error code is 0" do
+      it "exits with error code 0 if error code is 0" do
         t = task do; end
         a = t.add_action(action(:action_a) { on_error :exit, 0 })
 
@@ -216,7 +216,7 @@ describe Task do
 
         t.exit?.should eq(true)
         t.error?.should eq(true)
-        @context.get(:exit_code).should eq(1)
+        @context.get(:exit_code).should eq(0)
       end
     end
 
