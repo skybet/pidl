@@ -21,6 +21,20 @@ describe Task do
     @context = Context.new
   end
 
+  describe "#new" do
+
+    it "converts a non-symbol name to a symbol" do
+      t = Task.new "my_task", @context do; end
+      t.name.should eq(:my_task)
+    end
+
+    it "converts to string before symbol if to_sym not supported" do
+      t = Task.new 6, @context do; end
+      t.name.should eq("6".to_sym)
+    end
+
+  end
+
   describe "#ready?" do
 
     it "returns true if there are no dependencies" do

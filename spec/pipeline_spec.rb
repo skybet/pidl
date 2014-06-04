@@ -86,6 +86,27 @@ describe Pipeline do
       end.to raise_error(ArgumentError)
     end
 
+    it "converts string task identifiers to symbols" do
+      p = pipeline do
+        task "mytask" do
+        end
+      end
+      t = p.tasks
+      t.size.should eq(1)
+      t[:mytask].name.should eq(:mytask)
+    end
+
+    it "handles types that cannot be converted directly to symbol by converting to string" do
+      p = pipeline do
+        task 6 do
+        end
+      end
+      six_sym = 6.to_s.to_sym
+      t = p.tasks
+      t.size.should eq(1)
+      t[six_sym].name.should eq(six_sym)
+    end
+
   end
 
   describe "on_error" do
