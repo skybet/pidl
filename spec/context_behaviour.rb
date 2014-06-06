@@ -4,25 +4,48 @@ shared_examples_for "Context" do
 
   describe "Key/Value Store" do
 
-    it "returns a set named value" do
-      c = context_instance
-      c.set :mykey, "myval"
-      c.get(:mykey).should eq("myval")
+    describe "#get" do
+      it "returns a set named value" do
+        c = context_instance
+        c.set :mykey, "myval"
+        c.get(:mykey).should eq("myval")
+      end
+
+      it "returns nil if the set value does not exist" do
+        c = context_instance
+        v = c.get(:badkey) 
+        Lazy::demand(v).should eq(nil)
+      end
     end
 
-    it "returns nil if the set value does not exist" do
-      c = context_instance
-      v = c.get(:badkey) 
-      Lazy::demand(v).should eq(nil)
+    describe "#is_set?" do
+      it "returns true if a value exists" do
+        c = context_instance
+        c.set :mykey, "myval"
+        c.is_set?(:mykey).should eq(true)
+      end
+
+      it "returns false if a value does not exist" do
+        c = context_instance
+        c.is_set?(:mykey).should eq(false)
+      end
+
+      it "returns false if a value exists but is nil" do
+        c = context_instance
+        c.set :mykey, nil
+        c.is_set?(:mykey).should eq(false)
+      end
     end
 
-    it "returns the whole context hash" do
-      c = context_instance
-      c.set(:mykey, "myval")
-      c.set(:myotherkey, "myotherval")
-      a = c.all
-      a[:mykey].should eq("myval")
-      a[:myotherkey].should eq("myotherval")
+    describe "#all" do
+      it "returns the whole context hash" do
+        c = context_instance
+        c.set(:mykey, "myval")
+        c.set(:myotherkey, "myotherval")
+        a = c.all
+        a[:mykey].should eq("myval")
+        a[:myotherkey].should eq("myotherval")
+      end
     end
 
   end
