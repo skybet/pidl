@@ -107,7 +107,7 @@ module Pidl
       # an exists check
       if value.is_a? Symbol
         key = value
-        value = lambda { not get(key).nil? }
+        value = lambda { not get(key).nil? and !!(get key)}
       end
 
       @only_if = get_lazy_wrapper value, &block
