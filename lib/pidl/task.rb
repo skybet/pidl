@@ -51,10 +51,18 @@ module Pidl
     # See Pidl::Base::new
     #
     def initialize(name, context, flags = {}, &block)
+      if not name.is_a? Symbol
+        name = name.to_s
+      end
       @actions = []
       @exit = false
       @exit_code = nil
-      super
+      super name.to_s.to_sym, context, flags, &block
+
+      # Call logger after super so it can get set up properly
+      if not name.is_a? Symbol
+        logger.warn "Task name \"#{name}\" must be a symbol - converted to :#{name.to_sym}"
+      end
     end
 
     # Run all actions consecutively
