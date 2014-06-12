@@ -77,6 +77,14 @@ shared_examples_for "PidlBase" do
       i.set :my_key, 'value'
       i.skip?.should eq(false)
     end
+
+    it "returns true if a condition for a symbol exists and the symbol exists with a false value" do
+      i = instance do
+        only_if :my_key
+      end
+      i.set :my_key, false
+      i.skip?.should eq(true)
+    end
   end
 
 end

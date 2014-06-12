@@ -47,6 +47,18 @@ module Pidl
       }
     end
 
+    # Check if the given key exists in the context
+    #
+    # :call-seq:
+    #   is_set? key, value
+    #
+    def is_set? key
+      @mutex.synchronize {
+        logger.debug "Checking if #{key} exists"
+        not @context[key].nil?
+      }
+    end
+
     # Store the given key/value pair in the context
     #
     # Overwrites previous values if present.
