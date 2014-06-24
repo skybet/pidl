@@ -79,6 +79,14 @@ module Pidl
       @logger
     end
 
+    # Return the context
+    #
+    # :call-seq:
+    #   context -> Context
+    def context
+      @context
+    end
+
     # Missing methods get passed on to the context
     def method_missing(name, *args, &block) # :nodoc:
       @context.send name, *args, &block
