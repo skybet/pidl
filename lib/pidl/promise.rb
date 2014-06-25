@@ -79,10 +79,10 @@ module Pidl
     private
 
     def __eval
-      if @promise.respond_to? :call
+      if @promise.is_a? Symbol and @context
+        @value = @context.get @promise
+      elsif @promise.respond_to? :call
         @value = @promise.call
-      elsif @promise.is_a? Symbol and @context
-        @context.get @promise
       else
         @value = @promise
       end
