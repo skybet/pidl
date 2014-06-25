@@ -316,7 +316,6 @@ module Pidl
       @on_error = :raise
       @exit_code = nil
       super
-      validate
     end
 
     # Set the action to perform
@@ -342,7 +341,7 @@ module Pidl
     # :call-seq:
     #   dry_run indent=""
     def dry_run indent=""
-      puts "#{indent}#{self}"
+      "#{indent}#{self}"
     end
 
     # Validate the basic parameters of the action.
