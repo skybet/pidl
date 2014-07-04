@@ -29,6 +29,19 @@ module Pidl
   #
   class Action < PidlBase
 
+    def add_attribute name
+      begin
+        attributes = send :instance_variable_get, :@attributes
+      rescue
+      end
+
+      if attributes
+        attributes << name
+      else
+        send :instance_variable_set, :@attributes, [ name ]
+      end
+    end 
+
     # -------------------------------------------------------------------------
     # :section: Action Factories
     #
@@ -87,8 +100,10 @@ module Pidl
     #
     def self.setter(*method_names)
       method_names.each do |name|
+        s = "@#{name}".to_sym
         send :define_method, name do |value|
-          instance_variable_set "@#{name}".to_sym, value
+          add_attribute s
+          instance_variable_set s, value
         end
       end
     end
@@ -103,7 +118,10 @@ module Pidl
     #
     def self.setterlazy(*method_names)
       method_names.each do |name|
+        s = "@#{name}".to_sym
         send :define_method, name do |value=nil, &block|
+          add_attribute s
+
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
             raise RuntimeError.new "Cannot accept value and block in lazy hashsetter"
@@ -114,7 +132,7 @@ module Pidl
             logger.warn "No value specified in call to \##{name}"
             return
           end
-          instance_variable_set "@#{name}".to_sym, get_lazy_wrapper(value, &block)
+          instance_variable_set s, get_lazy_wrapper(value, &block)
         end
       end
     end
@@ -140,8 +158,10 @@ module Pidl
     #
     def self.vargsetter(*method_names)
       method_names.each do |name|
+        s = "@#{name}".to_sym
         send :define_method, name do |*value|
-          instance_variable_set "@#{name}".to_sym, value
+          add_attribute s
+          instance_variable_set s, value
         end
       end
     end
@@ -155,14 +175,16 @@ module Pidl
     #
     def self.vargsetterlazy(*method_names)
       method_names.each do |name|
+        s = "@#{name}".to_sym
         send :define_method, name do |*value, &block|
+          add_attribute s
           value = value.map { |v| get_lazy_wrapper v }
           # For some reason block_given? returns false here
           # so use respond_to? :call instead
           if block.respond_to? :call
             value.push(get_lazy_wrapper(nil, &block))
           end
-          instance_variable_set "@#{name}".to_sym, value
+          instance_variable_set s, value
         end
       end
     end
@@ -193,6 +215,7 @@ module Pidl
         s = "@#{name}".to_sym
         instance_variable_set s, []
         send :define_method, name do |value|
+          add_attribute s
           v = instance_variable_get s
           if v.nil?
             instance_variable_set s, [ value ]
@@ -215,6 +238,7 @@ module Pidl
         s = "@#{name}".to_sym
         instance_variable_set s, []
         send :define_method, name do |value=nil, &block|
+          add_attribute s
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
             raise RuntimeError.new "Cannot accept value and block in lazy hashsetter"
@@ -264,12 +288,13 @@ module Pidl
       method_names.each do |name|
         s = "@#{name}".to_sym
         send :define_method, name do |key, value=true|
-        v = instance_variable_get s
-        if v.nil?
-          instance_variable_set s, { key => value }
-        else
-          v[key] = value
-        end
+          add_attribute s
+          v = instance_variable_get s
+          if v.nil?
+            instance_variable_set s, { key => value }
+          else
+            v[key] = value
+          end
         end
       end
     end
@@ -285,6 +310,7 @@ module Pidl
       method_names.each do |name|
         s = "@#{name}".to_sym
         send :define_method, name do |key, value=nil, &block|
+          add_attribute s
 
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
@@ -315,7 +341,24 @@ module Pidl
       @action = nil
       @on_error = :raise
       @exit_code = nil
+      @attributes = []
       super
+    end
+
+    # Return a hash of all attribute values
+    #
+    # If true is passed in attempt to evaluate all lazy
+    # attributes as part of this call
+    #
+    def attributes evaluate=false
+      Hash[
+        @attributes.map { |s|
+          v = instance_variable_get s
+          v = v.value if evaluate and v.is_a? Pidl::Promise
+          k = s.to_s.sub(/^@/, '').to_sym
+          [ k, v ]
+        }
+      ]
     end
 
     # Set the action to perform
