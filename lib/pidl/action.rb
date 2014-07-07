@@ -358,7 +358,7 @@ module Pidl
           k = s.to_s.sub(/^@/, '').to_sym
           [ k, v ]
         }
-      ]
+      ].merge action: @action
     end
 
     # Set the action to perform
