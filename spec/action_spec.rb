@@ -104,11 +104,13 @@ describe Action do
 
       it "returns all attributes" do
         a = action do
+          action :test
           first "1st"
           second "2nd"
           third "3rd"
         end
         a.attributes.should eq({
+          action: :test,
           first: '1st',
           second: '2nd',
           third: '3rd'
@@ -117,10 +119,12 @@ describe Action do
 
       it "skips missed attributes" do
         a = action do
+          action :test
           first "1st"
           third "3rd"
         end
         a.attributes.should eq({
+          action: :test,
           first: '1st',
           third: '3rd'
         })
@@ -140,11 +144,13 @@ describe Action do
 
       it "returns all attributes as promises" do
         a = action do
+          action :test
           first "1st"
           second "2nd"
           third "3rd"
         end
-        Hash[ a.attributes.map { |k, v| [k, v.value]} ].should eq({
+        Hash[ a.attributes.map { |k, v| [k, k == :action ? v : v.value]} ].should eq({
+          action: :test,
           first: '1st',
           second: '2nd',
           third: '3rd'
@@ -153,11 +159,13 @@ describe Action do
 
       it "evaluates all attributes if true is passed" do
         a = action do
+          action :test
           first "1st"
           second "2nd"
           third "3rd"
         end
         a.attributes(true).should eq({
+          action: :test,
           first: '1st',
           second: '2nd',
           third: '3rd'
