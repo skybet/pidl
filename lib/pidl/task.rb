@@ -84,9 +84,9 @@ module Pidl
       @actions.each do |action|
         begin
           if not action.skip?
-            logger.info "Running action [#{action.to_s}]"
             action_start = Time.now
             emit :action_start, action.to_s
+            logger.info "Running action [#{action.to_s}]"
             action.run
             action_end = Time.now
             duration = ((action_end - action_start) * 1000).to_i
@@ -130,6 +130,7 @@ module Pidl
     #   add_action actions -> action
     #
     def add_action(a)
+      a.validate
       @actions << a
       a
     end
@@ -199,7 +200,7 @@ module Pidl
     def dry_run indent=""
       puts "#{indent}#{self}"
       @actions.each do |action|
-        action.dry_run "#{indent}    "
+        puts action.dry_run("#{indent}    ")
       end
     end
 

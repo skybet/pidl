@@ -381,6 +381,7 @@ module Pidl
     def run_group_and_wait group
       mutex = Mutex.new
       events = []
+      error = false
 
       # Capture events emitted on other threads safely
       handler = lambda { |*args|
@@ -399,10 +400,19 @@ module Pidl
             bind_task_events @tasks[t], handler
 
             # Run
-            @tasks[t].run
+            begin
+              @tasks[t].run
+            rescue => e
+              mutex.synchronize {
+                error = true
+                logger.error e.message
+                logger.debug(e.backtrace.join("\n"))
+              }
+            ensure
+              # Stop listening
+              unbind_task_events @tasks[t], handler
+            end
 
-            # Stop listening
-            unbind_task_events @tasks[t], handler
           else
             logger.debug "Skipping task [#{t}]"
           end
@@ -417,7 +427,14 @@ module Pidl
       events.each { |args|
         emit *args
       }
-      logger.debug "All threads complete"
+
+      # Raise the last error if there was one
+      if error
+        raise "At least one task raised an error. Check the log for details."
+      else
+        logger.debug "All threads complete"
+      end
+
     end
   end
 

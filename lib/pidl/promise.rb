@@ -14,8 +14,9 @@ module Pidl
     # Accepts a dumb value, lambda or block. Raises ArgumentError
     # if a value and a block are both provided.
     #
-    def initialize v=nil, &block
+    def initialize v=nil, context=nil, &block
       @promise = v
+      @context = context
       @value = nil
       if block_given?
         if not v.nil?
@@ -30,7 +31,7 @@ module Pidl
     # Always true for dumb values. Only true for callables after
     # they are evaluated the first time.
     def evaluated?
-      if @promise.respond_to? :call
+      if @promise.respond_to? :call or @promise.is_a? Symbol
         not @value.nil?
       else
         true
@@ -39,10 +40,25 @@ module Pidl
 
     # Return the evaluated value of this Promise
     #
-    # Evaluates if no already evaluated
+    # Evaluates if not already evaluated
     #
     def value
       @value || __eval
+    end
+
+    # Return the source of this promise in whatever
+    # form it takes
+    #
+    def desc
+      if evaluated?
+        value
+      elsif @promise.is_a? Symbol and @context
+        ":#{@promise.to_s}"
+      elsif @promise.respond_to? :call
+        "{block}"
+      else
+        @promise.to_s
+      end
     end
 
     # Convert to string
@@ -63,7 +79,9 @@ module Pidl
     private
 
     def __eval
-      if @promise.respond_to? :call
+      if @promise.is_a? Symbol and @context
+        @value = @context.get @promise
+      elsif @promise.respond_to? :call
         @value = @promise.call
       else
         @value = @promise

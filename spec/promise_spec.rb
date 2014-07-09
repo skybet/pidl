@@ -67,6 +67,34 @@ describe Promise do
       end.to raise_error(ArgumentError)
     end
 
+    it "accepts a symbol and context and evaluates when requested" do
+       context = Context.new
+       context.set :symbol, "value"
+       p = Promise.new :symbol, context
+       p.value.should eq("value")
+    end
+
+    it "returns the same value every time after symbol evaluation" do
+       context = Context.new
+       context.set :symbol, "value"
+       p = Promise.new :symbol, context
+       p.value.should eq("value")
+       context.set :symbol, "different"
+       p.value.should eq("value")
+    end
+
+    it "evaluates symbols lazily" do
+       context = Context.new
+       p = Promise.new :symbol, context
+       context.set :symbol, "value"
+       p.value.should eq("value")
+    end
+
+    it "returns the symbol if no context provided" do
+      p = Promise.new :symbol
+      p.value.should eq(:symbol)
+    end
+
   end
 
   describe "#to_s" do

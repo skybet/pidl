@@ -79,6 +79,14 @@ module Pidl
       @logger
     end
 
+    # Return the context
+    #
+    # :call-seq:
+    #   context -> Context
+    def context
+      @context
+    end
+
     # Missing methods get passed on to the context
     def method_missing(name, *args, &block) # :nodoc:
       @context.send name, *args, &block
@@ -168,9 +176,7 @@ module Pidl
     #
     def get_lazy_wrapper value, &block
       if value.is_a? Symbol
-        Promise.new do
-          get(value)
-        end
+        Promise.new value, @context
       elsif block_given?
         Promise.new &block
       else
