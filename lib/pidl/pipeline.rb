@@ -381,7 +381,7 @@ module Pidl
     def run_group_and_wait group
       mutex = Mutex.new
       events = []
-      error = false
+      errors = []
 
       # Capture events emitted on other threads safely
       handler = lambda { |*args|
@@ -404,8 +404,8 @@ module Pidl
               @tasks[t].run
             rescue => e
               mutex.synchronize {
-                error = true
-                logger.error e.message
+                errors << t
+                logger.error "Error when executing task [:#{t}] - #{e.message}"
                 logger.debug(e.backtrace.join("\n"))
               }
             ensure
@@ -414,7 +414,7 @@ module Pidl
             end
 
           else
-            logger.debug "Skipping task [#{t}]"
+            logger.debug "Skipping task [:#{t}]"
           end
         end
       end
@@ -429,10 +429,12 @@ module Pidl
       }
 
       # Raise the last error if there was one
-      if error
-        raise "At least one task raised an error. Check the log for details."
-      else
+      if errors.empty?
         logger.debug "All threads complete"
+      elsif errors.size == 1
+        raise "Error raised in task [#{errors[0]}] - Check the log for details."
+      else
+        raise "Errors raised in multiple tasks [#{errors.join(", ")}] - Check the log for details."
       end
 
     end
