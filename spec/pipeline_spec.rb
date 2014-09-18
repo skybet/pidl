@@ -360,6 +360,35 @@ describe Pipeline do
       ])
     end
 
+    it "respects max concurrency setting if set" do
+      p = pipeline concurrency: 3 do
+
+        task :firsttask do; end
+
+        task :secondtask do; end
+
+        task :thirdtask do; end
+
+        task :fourthtask do; end
+      end
+      p.explain.should eq([
+                          [ :firsttask, :secondtask, :thirdtask ],
+                          [ :fourthtask ]
+      ])
+    end
+
+    it "raises an error if concurrency is not an integer" do
+      expect do
+        p = pipeline concurrency: "no" do; end
+      end.to raise_error(ArgumentError)
+    end
+
+    it "raises an error if concurrency is less than 0" do
+      expect do
+        p = pipeline concurrency: -1 do; end
+      end.to raise_error(ArgumentError)
+    end
+
   end
 
   shared_examples_for "#run" do
