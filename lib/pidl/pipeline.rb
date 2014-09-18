@@ -86,6 +86,18 @@ module Pidl
       @skip = flags[:skip] || []
       @tasks = {}
 
+      begin
+        @concurrency = if flags[:concurrency]
+          Integer(flags[:concurrency])
+        else
+          0
+        end
+        @concurrency >= 0 || raise
+      rescue => e
+        raise ArgumentError.new "Invalid concurrency limit [#{flags[:concurrency]}]"
+      end
+
+
       # Sort out the job name and date
       context.set :job_name, name.to_s
       context.set :run_date, ::DateTime.now
@@ -314,7 +326,7 @@ module Pidl
       if tasks.empty?
         return plan
       end
-      return build_plan(plan + [ tasks ])
+      return build_plan( plan + split_for_concurrency(tasks) )
     end
 
     def check_plan plan
@@ -325,6 +337,20 @@ module Pidl
     end
 
     private
+
+    # Split an array of tasks based on concurrency limit.
+    #
+    # Accepts a list of tasks, returns an array of arrays
+    # of tasks. If concurrency == 0 then return as a single
+    # array, else group into @concurrency sized chunks
+    #
+    def split_for_concurrency tasks
+      if @concurrency == 0
+        [ tasks ]
+      else
+        tasks.each_slice(@concurrency).to_a
+      end
+    end
 
     # Create a new task instance and inject the custom actions into it
     #
