@@ -29,12 +29,12 @@ describe Pipeline do
 
     it "returns the job name via get" do
       i = pipeline do; end
-      i.get(:job_name).should eq('name_of_job')
+      expect(i.get(:job_name)).to eq('name_of_job')
     end
 
     it "returns the job name via all" do
       i = pipeline do; end
-      i.all[:job_name].should eq('name_of_job')
+      expect(i.all[:job_name]).to eq('name_of_job')
     end
 
   end
@@ -49,8 +49,8 @@ describe Pipeline do
       # run date should be between the test start and end
       # times. Easier than faffing with mocking the time.
       result = i.get(:run_date).strftime('%s%L').to_i
-      result.should >= test_start
-      result.should <= test_end
+      expect(result).to be >= test_start
+      expect(result).to be <= test_end
     end
 
   end
@@ -61,7 +61,7 @@ describe Pipeline do
       p = pipeline do
       end
       t = p.tasks
-      t.size.should eq(0)
+      expect(t.size).to eq(0)
     end
 
     it "adds new tasks" do
@@ -70,8 +70,8 @@ describe Pipeline do
         end
       end
       t = p.tasks
-      t.size.should eq(1)
-      t[:mytask].name.should eq(:mytask)
+      expect(t.size).to eq(1)
+      expect(t[:mytask].name).to eq(:mytask)
     end
 
     it "raises an error if a duplicate task name is specified" do
@@ -92,8 +92,8 @@ describe Pipeline do
         end
       end
       t = p.tasks
-      t.size.should eq(1)
-      t[:mytask].name.should eq(:mytask)
+      expect(t.size).to eq(1)
+      expect(t[:mytask].name).to eq(:mytask)
     end
 
     it "handles types that cannot be converted directly to symbol by converting to string" do
@@ -103,8 +103,8 @@ describe Pipeline do
       end
       six_sym = 6.to_s.to_sym
       t = p.tasks
-      t.size.should eq(1)
-      t[six_sym].name.should eq(six_sym)
+      expect(t.size).to eq(1)
+      expect(t[six_sym].name).to eq(six_sym)
     end
 
   end
@@ -116,7 +116,7 @@ describe Pipeline do
         on_error do
         end
       end
-      p.error_handler.name.should eq(:error_handler)
+      expect(p.error_handler.name).to eq(:error_handler)
     end
 
     it "does not call error handler if no error" do
@@ -226,7 +226,7 @@ describe Pipeline do
       p.add_task(t)
       expect(a).to receive(:run).and_raise(RuntimeError.new "Test")
       p.run
-      @context.get(:exit_code).should eq(101)
+      expect(@context.get(:exit_code)).to eq(101)
     end
 
   end
@@ -249,10 +249,10 @@ describe Pipeline do
           customaction do; end
         end
       end
-      p.tasks.size.should eq(1)
+      expect(p.tasks.size).to eq(1)
       t = p.tasks[:mytask]
       a = t.actions[0]
-      a.name.should eq('mytask.customaction')
+      expect(a.name).to eq('mytask.customaction')
     end
 
     it "returns a task blessed with the provided action with a given name" do
@@ -261,10 +261,10 @@ describe Pipeline do
           customaction "this is a custom name" do; end
         end
       end
-      p.tasks.size.should eq(1)
+      expect(p.tasks.size).to eq(1)
       t = p.tasks[:mytask]
       a = t.actions[0]
-      a.name.should eq('this is a custom name')
+      expect(a.name).to eq('this is a custom name')
     end
 
   end
@@ -273,14 +273,14 @@ describe Pipeline do
 
     it "return an empty array if there are no tasks" do
       p = pipeline do; end
-      p.explain.should eq([])
+      expect(p.explain).to eq([])
     end
 
     it "returns a single task with no dependencies" do
       p = pipeline do
         task :onlytask do; end
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :onlytask ]
       ])
     end
@@ -293,7 +293,7 @@ describe Pipeline do
         task :secondtask do; end
 
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :firsttask, :secondtask ]
       ])
     end
@@ -315,7 +315,7 @@ describe Pipeline do
 
         task :firsttask do; end
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :firsttask ],
                           [ :secondtask ]
       ])
@@ -333,7 +333,7 @@ describe Pipeline do
           after :firsttask
         end
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :firsttask ],
                           [ :secondtask, :thirdtask ]
       ])
@@ -353,7 +353,7 @@ describe Pipeline do
           after :firsttask, :thirdtask
         end
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :firsttask, :secondtask ],
                           [ :thirdtask ],
                           [ :fourthtask ]
@@ -371,7 +371,7 @@ describe Pipeline do
 
         task :fourthtask do; end
       end
-      p.explain.should eq([
+      expect(p.explain).to eq([
                           [ :firsttask, :secondtask, :thirdtask ],
                           [ :fourthtask ]
       ])
@@ -612,10 +612,10 @@ describe Pipeline do
       probe_end = lambda { }
 
       expect(probe_start).to receive(:call) do |event, name|
-        name.should eq(:name_of_job)
+        expect(name).to eq(:name_of_job)
         expect(probe_end).to receive(:call) do |event, name, duration|
-          name.should eq(:name_of_job)
-          duration.is_a?(Integer).should eq(true)
+          expect(name).to eq(:name_of_job)
+          expect(duration.is_a?(Integer)).to eq(true)
         end
       end
 
@@ -641,18 +641,18 @@ describe Pipeline do
       probe_end = lambda { }
 
       expect(probe_start).to receive(:call) do |event, name|
-        name.should eq(:firsttask)
+        expect(name).to eq(:firsttask)
 
         expect(probe_end).to receive(:call) do |event, name, duration|
-          name.should eq(:firsttask)
-          duration.is_a?(Integer).should eq(true)
+          expect(name).to eq(:firsttask)
+          expect(duration.is_a?(Integer)).to eq(true)
 
           expect(probe_start).to receive(:call) do |event, name|
-            name.should eq(:secondtask)
+            expect(name).to eq(:secondtask)
 
             expect(probe_end).to receive(:call) do |event, name, duration|
-              name.should eq(:secondtask)
-              duration.is_a?(Integer).should eq(true)
+              expect(name).to eq(:secondtask)
+              expect(duration.is_a?(Integer)).to eq(true)
             end
           end
         end
@@ -676,18 +676,18 @@ describe Pipeline do
       probe_end = lambda { }
 
       expect(probe_start).to receive(:call) do |event, name|
-        name.should eq("Action:action 1:test")
+        expect(name).to eq("Action:action 1:test")
 
         expect(probe_end).to receive(:call) do |event, name, duration|
-          name.should eq("Action:action 1:test")
-          duration.is_a?(Integer).should eq(true)
+          expect(name).to eq("Action:action 1:test")
+          expect(duration.is_a?(Integer)).to eq(true)
 
           expect(probe_start).to receive(:call) do |event, name|
-            name.should eq("Action:action 2:test")
+            expect(name).to eq("Action:action 2:test")
 
             expect(probe_end).to receive(:call) do |event, name, duration|
-              name.should eq("Action:action 2:test")
-              duration.is_a?(Integer).should eq(true)
+              expect(name).to eq("Action:action 2:test")
+              expect(duration.is_a?(Integer)).to eq(true)
             end
           end
         end

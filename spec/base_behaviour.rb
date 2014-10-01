@@ -26,7 +26,7 @@ shared_examples_for "PidlBase" do
 
     it "returns the specified name" do
       i = instance do; end
-      i.name.should eq(:name_of_instance)
+      expect(i.name).to eq(:name_of_instance)
     end
 
   end
@@ -36,7 +36,7 @@ shared_examples_for "PidlBase" do
     it "returns a valid logger" do
       i = instance do; end
       l = i.logger
-      l.is_a?(Logger).should eq(true)
+      expect(l.is_a?(Logger)).to eq(true)
     end
 
   end
@@ -45,14 +45,14 @@ shared_examples_for "PidlBase" do
 
     it "returns false if no condition exists" do
       i = instance do; end
-      i.skip?.should eq(false)
+      expect(i.skip?).to eq(false)
     end
 
     it "returns false if a condition exists and is true" do
       i = instance do
         only_if { true }
       end
-      i.skip?.should eq(false)
+      expect(i.skip?).to eq(false)
 
     end
 
@@ -60,14 +60,14 @@ shared_examples_for "PidlBase" do
       i = instance do
         only_if { false }
       end
-      i.skip?.should eq(true)
+      expect(i.skip?).to eq(true)
     end
 
     it "returns true if a condition for a symbol exists and the symbol does not exist in context" do
       i = instance do
         only_if :my_key
       end
-      i.skip?.should eq(true)
+      expect(i.skip?).to eq(true)
     end
 
     it "returns false if a condition for a symbol exists and the symbol exists in context" do
@@ -75,7 +75,7 @@ shared_examples_for "PidlBase" do
         only_if :my_key
       end
       i.set :my_key, 'value'
-      i.skip?.should eq(false)
+      expect(i.skip?).to eq(false)
     end
 
     it "returns true if a condition for a symbol exists and the symbol exists with a false value" do
@@ -83,7 +83,7 @@ shared_examples_for "PidlBase" do
         only_if :my_key
       end
       i.set :my_key, false
-      i.skip?.should eq(true)
+      expect(i.skip?).to eq(true)
     end
   end
 

@@ -8,13 +8,13 @@ shared_examples_for "Context" do
       it "returns a set named value" do
         c = context_instance
         c.set :mykey, "myval"
-        c.get(:mykey).should eq("myval")
+        expect(c.get(:mykey)).to eq("myval")
       end
 
       it "returns nil if the set value does not exist" do
         c = context_instance
         v = c.get(:badkey) 
-        Lazy::demand(v).should eq(nil)
+        expect(Lazy::demand(v)).to eq(nil)
       end
     end
 
@@ -22,18 +22,18 @@ shared_examples_for "Context" do
       it "returns true if a value exists" do
         c = context_instance
         c.set :mykey, "myval"
-        c.is_set?(:mykey).should eq(true)
+        expect(c.is_set?(:mykey)).to eq(true)
       end
 
       it "returns false if a value does not exist" do
         c = context_instance
-        c.is_set?(:mykey).should eq(false)
+        expect(c.is_set?(:mykey)).to eq(false)
       end
 
       it "returns false if a value exists but is nil" do
         c = context_instance
         c.set :mykey, nil
-        c.is_set?(:mykey).should eq(false)
+        expect(c.is_set?(:mykey)).to eq(false)
       end
     end
 
@@ -43,8 +43,8 @@ shared_examples_for "Context" do
         c.set(:mykey, "myval")
         c.set(:myotherkey, "myotherval")
         a = c.all
-        a[:mykey].should eq("myval")
-        a[:myotherkey].should eq("myotherval")
+        expect(a[:mykey]).to eq("myval")
+        expect(a[:myotherkey]).to eq("myotherval")
       end
     end
 
@@ -61,7 +61,7 @@ shared_examples_for "Context" do
 
     it "returns the param if it exists" do
       c = context_instance param: 'this is the param'
-      c.param.should eq('this is the param')
+      expect(c.param).to eq('this is the param')
     end
 
   end
@@ -77,12 +77,12 @@ shared_examples_for "Context" do
 
     it "returns empty array if no params exist" do
       c = context_instance params: []
-      c.params.should eq([])
+      expect(c.params).to eq([])
     end
 
     it "returns the params array if params exist" do
       c = context_instance params: ['one', 'two', 'three']
-      c.params.should eq(['one', 'two', 'three'])
+      expect(c.params).to eq(['one', 'two', 'three'])
     end
 
   end
@@ -105,12 +105,12 @@ shared_examples_for "Context" do
 
     it "returns the value if the key exists" do
       c = context_instance params: { somekey: 'somevalue' }
-      c.params(:somekey).should eq('somevalue')
+      expect(c.params(:somekey)).to eq('somevalue')
     end
 
     it "returns the full hash if all_params is called" do
       c = context_instance params: { somekey: 'somevalue' }
-      c.all_params.should eq({ somekey: 'somevalue' })
+      expect(c.all_params).to eq({ somekey: 'somevalue' })
     end
 
   end

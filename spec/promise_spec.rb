@@ -8,35 +8,35 @@ describe Promise do
 
     it "accepts and returns a scalar value" do
       p = Promise.new("hello")
-      p.value.should eq("hello")
+      expect(p.value).to eq("hello")
     end
 
     it "accepts a lambda and evaluates it when requested" do
       p = Promise.new lambda { "hello" }
-      p.value.should eq("hello")
+      expect(p.value).to eq("hello")
     end
 
     it "returns the same value every time after lambda evaluation" do
       number = 1
       p = Promise.new lambda { number }
-      p.value.should eq(1)
+      expect(p.value).to eq(1)
 
       number = 2
-      p.value.should eq(1)
+      expect(p.value).to eq(1)
     end
 
     it "evaluates lambdas lazily" do
       number = 1
       p = Promise.new lambda { number }
       number = 2
-      p.value.should eq(2)
+      expect(p.value).to eq(2)
     end
 
     it "accepts a block and evaluates it when requested" do
       p = Promise.new do
         "hello"
       end
-      p.value.should eq("hello")
+      expect(p.value).to eq("hello")
     end
 
     it "returns the same value every time after block evaluation" do
@@ -44,10 +44,10 @@ describe Promise do
       p = Promise.new do
         number
       end
-      p.value.should eq(1)
+      expect(p.value).to eq(1)
 
       number = 2
-      p.value.should eq(1)
+      expect(p.value).to eq(1)
     end
 
     it "evaluates blocks lazily" do
@@ -56,7 +56,7 @@ describe Promise do
         number
       end
       number = 2
-      p.value.should eq(2)
+      expect(p.value).to eq(2)
     end
 
     it "does not allow a block and a value at the same time" do
@@ -71,28 +71,28 @@ describe Promise do
        context = Context.new
        context.set :symbol, "value"
        p = Promise.new :symbol, context
-       p.value.should eq("value")
+       expect(p.value).to eq("value")
     end
 
     it "returns the same value every time after symbol evaluation" do
        context = Context.new
        context.set :symbol, "value"
        p = Promise.new :symbol, context
-       p.value.should eq("value")
+       expect(p.value).to eq("value")
        context.set :symbol, "different"
-       p.value.should eq("value")
+       expect(p.value).to eq("value")
     end
 
     it "evaluates symbols lazily" do
        context = Context.new
        p = Promise.new :symbol, context
        context.set :symbol, "value"
-       p.value.should eq("value")
+       expect(p.value).to eq("value")
     end
 
     it "returns the symbol if no context provided" do
       p = Promise.new :symbol
-      p.value.should eq(:symbol)
+      expect(p.value).to eq(:symbol)
     end
 
   end
@@ -101,18 +101,18 @@ describe Promise do
 
     it "evaluates if cast to string" do
       p = Promise.new lambda { "hello" }
-      p.to_s.should eq("hello")
+      expect(p.to_s).to eq("hello")
     end
 
     it "evaluates if coerced to string" do
       p = Promise.new lambda { "hello" }
-      "#{p}".should eq("hello")
+      expect("#{p}").to eq("hello")
     end
 
     it "evaluates if automatically converted to string" do
       p = Promise.new lambda { "world" }
       a = "hello " << p
-      a.should eq("hello world")
+      expect(a).to eq("hello world")
     end
 
   end
@@ -121,18 +121,18 @@ describe Promise do
 
     it "returns false if not yet evaluated" do
       p = Promise.new lambda { "hello" }
-      p.evaluated?.should eq(false)
+      expect(p.evaluated?).to eq(false)
     end
 
     it "returns true if evaluated" do
       p = Promise.new lambda { "hello" }
       p.value
-      p.evaluated?.should eq(true)
+      expect(p.evaluated?).to eq(true)
     end
 
     it "always returns true for simple values" do
       p = Promise.new "hello"
-      p.evaluated?.should eq(true)
+      expect(p.evaluated?).to eq(true)
     end
 
   end
