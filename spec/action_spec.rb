@@ -31,28 +31,28 @@ describe Action do
       it "returns true if on_error is not set" do
         a = action do
         end
-        a.raise_on_error?.should eq(true)
+        expect(a.raise_on_error?).to eq(true)
       end
 
       it "returns true if on_error is :raise" do
         a = action do
           on_error :raise
         end
-        a.raise_on_error?.should eq(true)
+        expect(a.raise_on_error?).to eq(true)
       end
 
       it "returns false if on_error is :exit" do
         a = action do
           on_error :exit
         end
-        a.raise_on_error?.should eq(false)
+        expect(a.raise_on_error?).to eq(false)
       end
 
       it "returns false if on_error is :continue" do
         a = action do
           on_error :continue
         end
-        a.raise_on_error?.should eq(false)
+        expect(a.raise_on_error?).to eq(false)
       end
 
     end
@@ -62,28 +62,28 @@ describe Action do
       it "returns false if on_error is not set" do
         a = action do
         end
-        a.exit_on_error?.should eq(false)
+        expect(a.exit_on_error?).to eq(false)
       end
 
       it "returns true if on_error is :exit" do
         a = action do
           on_error :exit
         end
-        a.exit_on_error?.should eq(true)
+        expect(a.exit_on_error?).to eq(true)
       end
 
       it "returns false if on_error is :raise" do
         a = action do
           on_error :raise
         end
-        a.exit_on_error?.should eq(false)
+        expect(a.exit_on_error?).to eq(false)
       end
 
       it "returns false if on_error is :continue" do
         a = action do
           on_error :continue
         end
-        a.exit_on_error?.should eq(false)
+        expect(a.exit_on_error?).to eq(false)
       end
 
     end
@@ -109,7 +109,7 @@ describe Action do
           second "2nd"
           third "3rd"
         end
-        a.attributes.should eq({
+        expect(a.attributes).to eq({
           action: :test,
           first: '1st',
           second: '2nd',
@@ -123,7 +123,7 @@ describe Action do
           first "1st"
           third "3rd"
         end
-        a.attributes.should eq({
+        expect(a.attributes).to eq({
           action: :test,
           first: '1st',
           third: '3rd'
@@ -149,7 +149,7 @@ describe Action do
           second "2nd"
           third "3rd"
         end
-        Hash[ a.attributes.map { |k, v| [k, k == :action ? v : v.value]} ].should eq({
+        expect(Hash[ a.attributes.map { |k, v| [k, k == :action ? v : v.value]} ]).to eq({
           action: :test,
           first: '1st',
           second: '2nd',
@@ -164,7 +164,7 @@ describe Action do
           second "2nd"
           third "3rd"
         end
-        a.attributes(true).should eq({
+        expect(a.attributes(true)).to eq({
           action: :test,
           first: '1st',
           second: '2nd',
@@ -188,14 +188,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter].should eq(123)
+      expect(a.attributes[:parameter]).to eq(123)
     end
 
     it "overwrites previous values" do
@@ -203,21 +203,21 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter].should eq(456)
+      expect(a.attributes[:parameter]).to eq(456)
     end
 
     it "returns a symbol" do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter].should eq(:symbol)
+      expect(a.attributes[:parameter]).to eq(:symbol)
     end
 
     it "returns a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter].lambda?.should eq(true)
+      expect(a.attributes[:parameter].lambda?).to eq(true)
     end
 
     it "does nothing with a block" do
@@ -244,14 +244,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter].value.should eq(123)
+      expect(a.attributes[:parameter].value).to eq(123)
     end
 
     it "overwrites previous values" do
@@ -259,7 +259,7 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter].value.should eq(456)
+      expect(a.attributes[:parameter].value).to eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -267,14 +267,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter].value.should eq(123)
+      expect(a.attributes[:parameter].value).to eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter].value.should eq(1)
+      expect(a.attributes[:parameter].value).to eq(1)
     end
 
     it "evaluates a block" do
@@ -283,7 +283,7 @@ describe Action do
           1
         end
       end
-      a.attributes[:parameter].value.should eq(1)
+      expect(a.attributes[:parameter].value).to eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -293,7 +293,7 @@ describe Action do
         end
       end
       @context.set :path, "/tmp/my/path"
-      a.attributes[:parameter].value.should eq("/tmp/my/path/filename")
+      expect(a.attributes[:parameter].value).to eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do
@@ -320,21 +320,21 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value in an array" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter].should eq([ 123 ])
+      expect(a.attributes[:parameter]).to eq([ 123 ])
     end
 
     it "returns multiple params as an array" do
       a = action do
         parameter 123, "string", ["array"]
       end
-      a.attributes[:parameter].should eq([ 123, "string", ["array"] ])
+      expect(a.attributes[:parameter]).to eq([ 123, "string", ["array"] ])
     end
 
     it "overwrites previous values" do
@@ -342,21 +342,21 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter].should eq([ 456 ])
+      expect(a.attributes[:parameter]).to eq([ 456 ])
     end
 
     it "returns a symbol in an array" do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter].should eq([ :symbol ])
+      expect(a.attributes[:parameter]).to eq([ :symbol ])
     end
 
     it "returns a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter][0].lambda?.should eq(true)
+      expect(a.attributes[:parameter][0].lambda?).to eq(true)
     end
 
     it "does nothing with a block" do
@@ -365,7 +365,7 @@ describe Action do
           1
         end
       end
-      a.attributes[:parameter].should eq([])
+      expect(a.attributes[:parameter]).to eq([])
     end
 
   end
@@ -382,23 +382,23 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter][0].value.should eq(123)
+      expect(a.attributes[:parameter][0].value).to eq(123)
     end
 
     it "returns multiple params as an array" do
       a = action do
         parameter 123, "string", ["array"]
       end
-      a.attributes[:parameter][0].value.should eq(123)
-      a.attributes[:parameter][1].value.should eq("string")
-      a.attributes[:parameter][2].value.should eq(["array"])
+      expect(a.attributes[:parameter][0].value).to eq(123)
+      expect(a.attributes[:parameter][1].value).to eq("string")
+      expect(a.attributes[:parameter][2].value).to eq(["array"])
     end
 
     it "overwrites previous values" do
@@ -406,7 +406,7 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter][0].value.should eq(456)
+      expect(a.attributes[:parameter][0].value).to eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -414,14 +414,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter][0].value.should eq(123)
+      expect(a.attributes[:parameter][0].value).to eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter][0].value.should eq(1)
+      expect(a.attributes[:parameter][0].value).to eq(1)
     end
 
     it "evaluates a block" do
@@ -430,7 +430,7 @@ describe Action do
           1
         end
       end
-      a.attributes[:parameter][0].value.should eq(1)
+      expect(a.attributes[:parameter][0].value).to eq(1)
     end
 
     it "puts block at the end of the array" do
@@ -439,8 +439,8 @@ describe Action do
           2
         end
       end
-      a.attributes[:parameter][0].value.should eq(1)
-      a.attributes[:parameter][1].value.should eq(2)
+      expect(a.attributes[:parameter][0].value).to eq(1)
+      expect(a.attributes[:parameter][1].value).to eq(2)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -450,7 +450,7 @@ describe Action do
           "#{get(:path)}/filename"
         end
       end
-      a.attributes[:parameter][0].value.should eq("/tmp/my/path/filename")
+      expect(a.attributes[:parameter][0].value).to eq("/tmp/my/path/filename")
     end
 
   end
@@ -467,14 +467,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter].should eq([ 123 ])
+      expect(a.attributes[:parameter]).to eq([ 123 ])
     end
 
     it "appends to previous values" do
@@ -482,21 +482,21 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter].should eq([ 123, 456 ])
+      expect(a.attributes[:parameter]).to eq([ 123, 456 ])
     end
 
     it "returns a symbol" do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter].should eq([ :symbol ])
+      expect(a.attributes[:parameter]).to eq([ :symbol ])
     end
 
     it "returns a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter][0].lambda?.should eq(true)
+      expect(a.attributes[:parameter][0].lambda?).to eq(true)
     end
 
     it "does nothing with a block" do
@@ -523,14 +523,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter 123
       end
-      a.attributes[:parameter][0].value.should eq(123)
+      expect(a.attributes[:parameter][0].value).to eq(123)
     end
 
     it "appends to previous values" do
@@ -538,8 +538,8 @@ describe Action do
         parameter 123
         parameter 456
       end
-      a.attributes[:parameter][0].value.should eq(123)
-      a.attributes[:parameter][1].value.should eq(456)
+      expect(a.attributes[:parameter][0].value).to eq(123)
+      expect(a.attributes[:parameter][1].value).to eq(456)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -547,14 +547,14 @@ describe Action do
       a = action do
         parameter :symbol
       end
-      a.attributes[:parameter][0].value.should eq(123)
+      expect(a.attributes[:parameter][0].value).to eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter lambda { 1 }
       end
-      a.attributes[:parameter][0].value.should eq(1)
+      expect(a.attributes[:parameter][0].value).to eq(1)
     end
 
     it "evaluates a block" do
@@ -563,7 +563,7 @@ describe Action do
           1
         end
       end
-      a.attributes[:parameter][0].value.should eq(1)
+      expect(a.attributes[:parameter][0].value).to eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -573,7 +573,7 @@ describe Action do
           "#{get(:path)}/filename"
         end
       end
-      a.attributes[:parameter][0].value.should eq("/tmp/my/path/filename")
+      expect(a.attributes[:parameter][0].value).to eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do
@@ -600,14 +600,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter :test, 123
       end
-      a.attributes[:parameter].should eq({ test: 123 })
+      expect(a.attributes[:parameter]).to eq({ test: 123 })
     end
 
     it "overwrites previous values" do
@@ -615,7 +615,7 @@ describe Action do
         parameter :one, 123
         parameter :one, 456
       end
-      a.attributes[:parameter].should eq({ one: 456 })
+      expect(a.attributes[:parameter]).to eq({ one: 456 })
     end
 
     it "adds multiple values" do
@@ -623,21 +623,21 @@ describe Action do
         parameter :one, 1
         parameter :two, 2
       end
-      a.attributes[:parameter].should eq({ one: 1, two: 2 })
+      expect(a.attributes[:parameter]).to eq({ one: 1, two: 2 })
     end
 
     it "returns a symbol" do
       a = action do
         parameter :test, :symbol
       end
-      a.attributes[:parameter].should eq({ test: :symbol })
+      expect(a.attributes[:parameter]).to eq({ test: :symbol })
     end
 
     it "returns a lambda" do
       a = action do
         parameter :one, lambda { 1 }
       end
-      a.attributes[:parameter][:one].lambda?.should eq(true)
+      expect(a.attributes[:parameter][:one].lambda?).to eq(true)
     end
 
     it "does nothing with a block" do
@@ -664,14 +664,14 @@ describe Action do
 
     it "returns nil if not set" do
       a = action do; end
-      a.attributes[:parameter].should eq(nil)
+      expect(a.attributes[:parameter]).to eq(nil)
     end
 
     it "returns a scalar value" do
       a = action do
         parameter :test, 123
       end
-      a.attributes[:parameter][:test].value.should eq(123)
+      expect(a.attributes[:parameter][:test].value).to eq(123)
     end
 
     it "overwrites previous values" do
@@ -679,7 +679,7 @@ describe Action do
         parameter :one, 123
         parameter :one, 456
       end
-      a.attributes[:parameter][:one].value.should eq(456)
+      expect(a.attributes[:parameter][:one].value).to eq(456)
     end
 
     it "adds multiple values" do
@@ -687,8 +687,8 @@ describe Action do
         parameter :one, 1
         parameter :two, 2
       end
-      a.attributes[:parameter][:one].value.should eq(1)
-      a.attributes[:parameter][:two].value.should eq(2)
+      expect(a.attributes[:parameter][:one].value).to eq(1)
+      expect(a.attributes[:parameter][:two].value).to eq(2)
     end
 
     it "returns the value associated with a symbol in the context" do
@@ -696,14 +696,14 @@ describe Action do
       a = action do
         parameter :test, :symbol
       end
-      a.attributes[:parameter][:test].value.should eq(123)
+      expect(a.attributes[:parameter][:test].value).to eq(123)
     end
 
     it "evaluates a lambda" do
       a = action do
         parameter :test, lambda { 1 }
       end
-      a.attributes[:parameter][:test].value.should eq(1)
+      expect(a.attributes[:parameter][:test].value).to eq(1)
     end
 
     it "evaluates a block" do
@@ -712,7 +712,7 @@ describe Action do
           1
         end
       end
-      a.attributes[:parameter][:test].value.should eq(1)
+      expect(a.attributes[:parameter][:test].value).to eq(1)
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
@@ -722,7 +722,7 @@ describe Action do
         end
       end
       @context.set :path, "/tmp/my/path"
-      a.attributes[:parameter][:test].value.should eq("/tmp/my/path/filename")
+      expect(a.attributes[:parameter][:test].value).to eq("/tmp/my/path/filename")
     end
 
     it "does not accept a parameter and a block" do

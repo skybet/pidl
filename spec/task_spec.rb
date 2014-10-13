@@ -25,12 +25,12 @@ describe Task do
 
     it "converts a non-symbol name to a symbol" do
       t = Task.new "my_task", @context do; end
-      t.name.should eq(:my_task)
+      expect(t.name).to eq(:my_task)
     end
 
     it "converts to string before symbol if to_sym not supported" do
       t = Task.new 6, @context do; end
-      t.name.should eq("6".to_sym)
+      expect(t.name).to eq("6".to_sym)
     end
 
   end
@@ -39,42 +39,42 @@ describe Task do
 
     it "returns true if there are no dependencies" do
       t = task do; end
-      t.ready?([]).should eq(true)
+      expect(t.ready?([])).to eq(true)
     end
 
     it "returns false if no dependencies have been seen" do
       t = task do
         after :dependency
       end
-      t.ready?([]).should eq(false)
+      expect(t.ready?([])).to eq(false)
     end
 
     it "returns false if the dependency has not been seen" do
       t = task do
         after :dependency
       end
-      t.ready?([ :notthisone ]).should eq(false)
+      expect(t.ready?([ :notthisone ])).to eq(false)
     end
 
     it "returns false if none of the dependencies have been seen" do
       t = task do
         after :dependency, :another
       end
-      t.ready?([ :notthisone ]).should eq(false)
+      expect(t.ready?([ :notthisone ])).to eq(false)
     end
 
     it "returns false if some of the dependencies have been seen" do
       t = task do
         after :dependency, :another
       end
-      t.ready?([ :dependency ]).should eq(false)
+      expect(t.ready?([ :dependency ])).to eq(false)
     end
 
     it "returns true if all of the dependencies have been seen" do
       t = task do
         after :dependency, :another
       end
-      t.ready?([ :dependency, :another ]).should eq(true)
+      expect(t.ready?([ :dependency, :another ])).to eq(true)
     end
 
   end
@@ -83,14 +83,14 @@ describe Task do
 
     it "returns true if there are no dependencies" do
       t = task do; end
-      t.first?.should eq(true)
+      expect(t.first?).to eq(true)
     end
 
     it "returns false if there are dependencies" do
       t = task do
         after :dependency
       end
-      t.first?.should eq(false)
+      expect(t.first?).to eq(false)
     end
 
   end
@@ -154,7 +154,7 @@ describe Task do
           t.run
         end.to raise_error(RuntimeError)
 
-        t.error?.should eq(true)
+        expect(t.error?).to eq(true)
       end
 
     end
@@ -176,9 +176,9 @@ describe Task do
           t.run
         end.not_to raise_error
 
-        t.exit?.should eq(true)
-        t.error?.should eq(true)
-        @context.get(:exit_code).should eq(0)
+        expect(t.exit?).to eq(true)
+        expect(t.error?).to eq(true)
+        expect(@context.get(:exit_code)).to eq(0)
       end
 
       it "exits with the specified error code if set" do
@@ -197,9 +197,9 @@ describe Task do
           t.run
         end.not_to raise_error
 
-        t.exit?.should eq(true)
-        t.error?.should eq(true)
-        @context.get(:exit_code).should eq(102)
+        expect(t.exit?).to eq(true)
+        expect(t.error?).to eq(true)
+        expect(@context.get(:exit_code)).to eq(102)
       end
 
       it "exits with error code 1 if error code is not an integer" do
@@ -213,9 +213,9 @@ describe Task do
           t.run
         end.not_to raise_error
 
-        t.exit?.should eq(true)
-        t.error?.should eq(true)
-        @context.get(:exit_code).should eq(1)
+        expect(t.exit?).to eq(true)
+        expect(t.error?).to eq(true)
+        expect(@context.get(:exit_code)).to eq(1)
       end
 
       it "exits with error code 0 if error code is 0" do
@@ -229,9 +229,9 @@ describe Task do
           t.run
         end.not_to raise_error
 
-        t.exit?.should eq(true)
-        t.error?.should eq(true)
-        @context.get(:exit_code).should eq(0)
+        expect(t.exit?).to eq(true)
+        expect(t.error?).to eq(true)
+        expect(@context.get(:exit_code)).to eq(0)
       end
     end
 
@@ -252,8 +252,8 @@ describe Task do
           t.run
         end.not_to raise_error
 
-        t.exit?.should eq(false)
-        t.error?.should eq(false)
+        expect(t.exit?).to eq(false)
+        expect(t.error?).to eq(false)
       end
     end
 

@@ -5,7 +5,7 @@ shared_examples_for "EventEmitter" do
     it "subscribes a single listener and receives an event" do
       e = emitter_instance
       probe = lambda { }
-      probe.should_receive(:call).with(:test)
+      expect(probe).to receive(:call).with(:test)
 
       e.on :test, &probe
       e.emit :test
@@ -14,7 +14,7 @@ shared_examples_for "EventEmitter" do
     it "subscribes a single listener with a lambda and receives an event" do
       e = emitter_instance
       probe = lambda { }
-      probe.should_receive(:call).with(:test)
+      expect(probe).to receive(:call).with(:test)
 
       e.on :test, probe
       e.emit :test
@@ -41,9 +41,9 @@ shared_examples_for "EventEmitter" do
     it "subscribes multiple listeners and all receive an event" do
       e = emitter_instance
       probe1 = lambda {}
-      probe1.should_receive(:call).with(:test)
+      expect(probe1).to receive(:call).with(:test)
       probe2 = lambda {}
-      probe2.should_receive(:call).with(:test)
+      expect(probe2).to receive(:call).with(:test)
 
       e.on :test, &probe1
       e.on :test, &probe2
@@ -53,7 +53,7 @@ shared_examples_for "EventEmitter" do
     it "sends parameters via emit" do
       e = emitter_instance
       probe = lambda { }
-      probe.should_receive(:call).with(:test, 'a', 1)
+      expect(probe).to receive(:call).with(:test, 'a', 1)
 
       e.on :test, &probe
       e.emit :test, 'a', 1
@@ -62,9 +62,9 @@ shared_examples_for "EventEmitter" do
     it "sends parameters to all subscribers via emit" do
       e = emitter_instance
       probe1 = lambda {}
-      probe1.should_receive(:call).with(:test, 'a', 1)
+      expect(probe1).to receive(:call).with(:test, 'a', 1)
       probe2 = lambda {}
-      probe2.should_receive(:call).with(:test, 'a', 1)
+      expect(probe2).to receive(:call).with(:test, 'a', 1)
 
       e.on :test, &probe1
       e.on :test, &probe2
@@ -74,9 +74,9 @@ shared_examples_for "EventEmitter" do
     it "unsubscribes on required" do
       e = emitter_instance
       probe1 = lambda {}
-      probe1.should_not_receive :call
+      expect(probe1).to_not receive :call
       probe2 = lambda {}
-      probe2.should_receive :call
+      expect(probe2).to receive :call
 
       e.on :test, &probe1
       e.on :test, &probe2
