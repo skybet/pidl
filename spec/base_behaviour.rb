@@ -1,32 +1,25 @@
 require 'logger'
 require 'context_behaviour'
+require 'event_behaviour'
 
 shared_examples_for "PidlBase" do
   it_behaves_like "Context"
   it_behaves_like "EventEmitter"
 
-  def instance options={}, &block
-    described_class.new :name_of_instance, @context, options, &block
+  let(:block) { Proc.new {} }
+
+  subject(:context) do
+    Context.new
   end
 
-  def context_instance *args
-    context = Context.send :new, *args
-    described_class.new :name_of_instance, context do; end
-  end
-
-  def emitter_instance
-    context_instance
-  end
-
-  before(:each) do
-    @context = Context.new
+  subject do
+    described_class.new :name_of_instance, context, &block
   end
 
   describe "#name" do
 
     it "returns the specified name" do
-      i = instance do; end
-      expect(i.name).to eq(:name_of_instance)
+      expect(subject.name).to eq(:name_of_instance)
     end
 
   end
@@ -34,57 +27,77 @@ shared_examples_for "PidlBase" do
   describe "#logger" do
 
     it "returns a valid logger" do
-      i = instance do; end
-      l = i.logger
-      expect(l.is_a?(Logger)).to eq(true)
+      expect(subject.logger).to be_kind_of(Logger)
     end
 
   end
 
   describe "#skip?" do
 
-    it "returns false if no condition exists" do
-      i = instance do; end
-      expect(i.skip?).to eq(false)
-    end
-
-    it "returns false if a condition exists and is true" do
-      i = instance do
-        only_if { true }
+    context "with no condition" do
+      it "returns false" do
+        expect(subject.skip?).to eq(false)
       end
-      expect(i.skip?).to eq(false)
-
     end
 
-    it "returns true if a condition exists and is false" do
-      i = instance do
-        only_if { false }
+    context "with true condition" do
+      let(:block) {
+        Proc.new do
+          only_if { true }
+        end
+      }
+      it "returns false" do
+        expect(subject.skip?).to eq(false)
       end
-      expect(i.skip?).to eq(true)
     end
 
-    it "returns true if a condition for a symbol exists and the symbol does not exist in context" do
-      i = instance do
-        only_if :my_key
+    context "with false condition" do
+      let(:block) {
+        Proc.new do
+          only_if { false }
+        end
+      }
+      it "returns true" do
+        expect(subject.skip?).to eq(true)
       end
-      expect(i.skip?).to eq(true)
     end
 
-    it "returns false if a condition for a symbol exists and the symbol exists in context" do
-      i = instance do
-        only_if :my_key
+    context "with a symbol" do
+      let(:block) {
+        Proc.new do
+          only_if :mykey
+        end
+      }
+
+      context "that is not in context" do
+        it "returns true" do
+          expect(subject.skip?).to eq(true)
+        end
       end
-      i.set :my_key, 'value'
-      expect(i.skip?).to eq(false)
+
+      context "that is in context" do
+        context "with a truthy value" do
+          before do
+            subject.set :mykey, "truthy"
+          end
+
+          it "returns false" do
+            expect(subject.skip?).to eq(false)
+          end
+        end
+
+        context "with a falsey value" do
+          before do
+            subject.set :mykey, false
+          end
+
+          it "returns true" do
+            expect(subject.skip?).to eq(true)
+          end
+        end
+      end
     end
 
-    it "returns true if a condition for a symbol exists and the symbol exists with a false value" do
-      i = instance do
-        only_if :my_key
-      end
-      i.set :my_key, false
-      expect(i.skip?).to eq(true)
-    end
   end
 
 end

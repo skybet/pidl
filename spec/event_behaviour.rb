@@ -1,89 +1,79 @@
 shared_examples_for "EventEmitter" do
 
-  describe "events" do
-
-    it "subscribes a single listener and receives an event" do
-      e = emitter_instance
-      probe = lambda { }
-      expect(probe).to receive(:call).with(:test)
-
-      e.on :test, &probe
-      e.emit :test
-    end
-
-    it "subscribes a single listener with a lambda and receives an event" do
-      e = emitter_instance
-      probe = lambda { }
-      expect(probe).to receive(:call).with(:test)
-
-      e.on :test, probe
-      e.emit :test
-    end
-
-    it "raises an error if a lambda and block is provided" do
-      e = emitter_instance
-      probe = lambda { }
-
-      expect do
-        e.on :test, probe do; end
-      end.to raise_error
-    end
+  context "events" do
 
     it "raises an error if handler is not callable" do
-      e = emitter_instance
-      probe = "test"
-
       expect do
-        e.on :test, probe
+        subject.on :test, "not callable"
       end.to raise_error
     end
 
-    it "subscribes multiple listeners and all receive an event" do
-      e = emitter_instance
-      probe1 = lambda {}
-      expect(probe1).to receive(:call).with(:test)
-      probe2 = lambda {}
-      expect(probe2).to receive(:call).with(:test)
+    context "with a single listener" do
 
-      e.on :test, &probe1
-      e.on :test, &probe2
-      e.emit :test
+      let(:probe) { lambda {} }
+
+      it "receives an event if the listener is a block" do
+        probe.should_receive(:call).with(:test)
+        subject.on :test, &probe
+        subject.emit :test
+      end
+
+      it "receives an event if the listener is a lambda" do
+        probe.should_receive(:call).with(:test)
+        subject.on :test, probe
+        subject.emit :test
+      end
+
+      it "raises an error if both a lambda and block is provided" do
+        expect do
+          subject.on :test, probe do; end
+        end.to raise_error
+      end
+
+      it "sends parameters via emit" do
+        probe.should_receive(:call).with(:test, 'a', 1)
+
+        subject.on :test, &probe
+        subject.emit :test, 'a', 1
+      end
+
     end
 
-    it "sends parameters via emit" do
-      e = emitter_instance
-      probe = lambda { }
-      expect(probe).to receive(:call).with(:test, 'a', 1)
+    context "with multiple listeners" do
 
-      e.on :test, &probe
-      e.emit :test, 'a', 1
-    end
+      let(:probe1) { lambda{} }
+      let(:probe2) { lambda{} }
 
-    it "sends parameters to all subscribers via emit" do
-      e = emitter_instance
-      probe1 = lambda {}
-      expect(probe1).to receive(:call).with(:test, 'a', 1)
-      probe2 = lambda {}
-      expect(probe2).to receive(:call).with(:test, 'a', 1)
+      it "subscribes multiple listeners and all receive an event" do
+        probe1.should_receive(:call).with(:test)
+        probe2.should_receive(:call).with(:test)
 
-      e.on :test, &probe1
-      e.on :test, &probe2
-      e.emit :test, 'a', 1
-    end
+        subject.on :test, &probe1
+        subject.on :test, &probe2
+        subject.emit :test
+      end
 
-    it "unsubscribes on required" do
-      e = emitter_instance
-      probe1 = lambda {}
-      expect(probe1).to_not receive :call
-      probe2 = lambda {}
-      expect(probe2).to receive :call
+      it "sends parameters to all subscribers via emit" do
+        probe1.should_receive(:call).with(:test, 'a', 1)
+        probe2.should_receive(:call).with(:test, 'a', 1)
 
-      e.on :test, &probe1
-      e.on :test, &probe2
+        subject.on :test, &probe1
+        subject.on :test, &probe2
+        subject.emit :test, 'a', 1
+      end
 
-      e.removeListener :test, probe1
+      it "unsubscribes on required" do
+        probe1.should_not_receive :call
+        probe2.should_receive :call
 
-      e.emit :test
+        subject.on :test, &probe1
+        subject.on :test, &probe2
+
+        subject.removeListener :test, probe1
+
+        subject.emit :test
+      end
+
     end
 
   end
