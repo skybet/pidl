@@ -6,30 +6,28 @@ include Pidl
 describe Task do
   it_behaves_like "PidlBase"
 
-  @context = nil
-
   def task &block
-    return Task.new :name, @context, &block
+    return Task.new :name, context, &block
   end
 
   def action(name=nil, &block)
     name ||= :actionname
-    return Action.new name, @context, &block
+    return Action.new name, context, &block
   end
 
-  before(:each) do
-    @context = Context.new
+  subject(:context) do
+    Context.new
   end
 
   describe "#new" do
 
     it "converts a non-symbol name to a symbol" do
-      t = Task.new "my_task", @context do; end
+      t = Task.new "my_task", context do; end
       expect(t.name).to eq(:my_task)
     end
 
     it "converts to string before symbol if to_sym not supported" do
-      t = Task.new 6, @context do; end
+      t = Task.new 6, context do; end
       expect(t.name).to eq("6".to_sym)
     end
 
@@ -178,7 +176,7 @@ describe Task do
 
         expect(t.exit?).to eq(true)
         expect(t.error?).to eq(true)
-        expect(@context.get(:exit_code)).to eq(0)
+        expect(context.get(:exit_code)).to eq(0)
       end
 
       it "exits with the specified error code if set" do
@@ -199,7 +197,7 @@ describe Task do
 
         expect(t.exit?).to eq(true)
         expect(t.error?).to eq(true)
-        expect(@context.get(:exit_code)).to eq(102)
+        expect(context.get(:exit_code)).to eq(102)
       end
 
       it "exits with error code 1 if error code is not an integer" do
@@ -215,7 +213,7 @@ describe Task do
 
         expect(t.exit?).to eq(true)
         expect(t.error?).to eq(true)
-        expect(@context.get(:exit_code)).to eq(1)
+        expect(context.get(:exit_code)).to eq(1)
       end
 
       it "exits with error code 0 if error code is 0" do
@@ -231,7 +229,7 @@ describe Task do
 
         expect(t.exit?).to eq(true)
         expect(t.error?).to eq(true)
-        expect(@context.get(:exit_code)).to eq(0)
+        expect(context.get(:exit_code)).to eq(0)
       end
     end
 
