@@ -7,22 +7,20 @@ include Pidl
 describe Pipeline do
   it_behaves_like "PidlBase"
 
-  @context = nil
-
   def pipeline options={}, &block
-    return Pipeline.new :name_of_job, @context, options, &block
+    return Pipeline.new :name_of_job, context, options, &block
   end
 
   def task name, &block
-    Task.new name, @context, &block
+    Task.new name, context, &block
   end
 
   def action name, &block
-    Action.new name, @context, &block
+    Action.new name, context, &block
   end
 
-  before(:each) do
-    @context = Context.new
+  subject(:context) do
+    Context.new
   end
 
   describe "job name" do
@@ -226,7 +224,7 @@ describe Pipeline do
       p.add_task(t)
       expect(a).to receive(:run).and_raise(RuntimeError.new "Test")
       p.run
-      expect(@context.get(:exit_code)).to eq(101)
+      expect(context.get(:exit_code)).to eq(101)
     end
 
   end
@@ -668,8 +666,8 @@ describe Pipeline do
 
       t1 = task :firsttask do
       end
-      t1.add_action Action.new("action 1", @context) { action :test }
-      t1.add_action Action.new("action 2", @context) { action :test }
+      t1.add_action Action.new("action 1", context) { action :test }
+      t1.add_action Action.new("action 2", context) { action :test }
       p.add_task(t1)
 
       probe_start = lambda { }
@@ -703,7 +701,7 @@ describe Pipeline do
   context "run one" do
 
     def task name, &block
-      Task.new name, @context, &block
+      Task.new name, context, &block
     end
 
     it "runs a single task if run_one is set" do

@@ -6,14 +6,12 @@ include Pidl
 describe Action do
   it_behaves_like "PidlBase"
 
-  @context = nil
-
   def action &block
-    return Action.new :actionname, @context, &block
+    return Action.new :actionname, context, &block
   end
 
-  before(:each) do
-    @context = Context.new
+  subject(:context) do
+    Context.new
   end
 
   describe "#on_error" do
@@ -99,7 +97,7 @@ describe Action do
       end
 
       def action &block
-        AttributeAction.new :testname, @context, &block
+        AttributeAction.new :testname, context, &block
       end
 
       it "returns all attributes" do
@@ -139,7 +137,7 @@ describe Action do
       end
 
       def action &block
-        LazyAttributeAction.new :testname, @context, &block
+        LazyAttributeAction.new :testname, context, &block
       end
 
       it "returns all attributes as promises" do
@@ -183,7 +181,7 @@ describe Action do
     end
 
     def action &block
-      SetterAction.new :testname, @context, &block
+      SetterAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -239,7 +237,7 @@ describe Action do
     end
 
     def action &block
-      SetterLazyAction.new :testname, @context, &block
+      SetterLazyAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -263,7 +261,7 @@ describe Action do
     end
 
     it "returns the value associated with a symbol in the context" do
-      @context.set :symbol, 123
+      context.set :symbol, 123
       a = action do
         parameter :symbol
       end
@@ -292,7 +290,7 @@ describe Action do
           "#{get(:path)}/filename"
         end
       end
-      @context.set :path, "/tmp/my/path"
+      context.set :path, "/tmp/my/path"
       expect(a.attributes[:parameter].value).to eq("/tmp/my/path/filename")
     end
 
@@ -315,7 +313,7 @@ describe Action do
     end
 
     def action &block
-      VargSetterAction.new :testname, @context, &block
+      VargSetterAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -377,7 +375,7 @@ describe Action do
     end
 
     def action &block
-      VargSetterLazyAction.new :testname, @context, &block
+      VargSetterLazyAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -410,7 +408,7 @@ describe Action do
     end
 
     it "returns the value associated with a symbol in the context" do
-      @context.set :symbol, 123
+      context.set :symbol, 123
       a = action do
         parameter :symbol
       end
@@ -444,7 +442,7 @@ describe Action do
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
-      @context.set :path, "/tmp/my/path"
+      context.set :path, "/tmp/my/path"
       a = action do
         parameter do
           "#{get(:path)}/filename"
@@ -462,7 +460,7 @@ describe Action do
     end
 
     def action &block
-      ArraySetterAction.new :testname, @context, &block
+      ArraySetterAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -518,7 +516,7 @@ describe Action do
     end
 
     def action &block
-      ArraySetterLazyAction.new :testname, @context, &block
+      ArraySetterLazyAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -543,7 +541,7 @@ describe Action do
     end
 
     it "returns the value associated with a symbol in the context" do
-      @context.set :symbol, 123
+      context.set :symbol, 123
       a = action do
         parameter :symbol
       end
@@ -567,7 +565,7 @@ describe Action do
     end
 
     it "recursively evaluates context calls inside lazy blocks" do
-      @context.set :path, "/tmp/my/path"
+      context.set :path, "/tmp/my/path"
       a = action do
         parameter do
           "#{get(:path)}/filename"
@@ -595,7 +593,7 @@ describe Action do
     end
 
     def action &block
-      HashSetterAction.new :testname, @context, &block
+      HashSetterAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -659,7 +657,7 @@ describe Action do
     end
 
     def action &block
-      HashSetterLazyAction.new :testname, @context, &block
+      HashSetterLazyAction.new :testname, context, &block
     end
 
     it "returns nil if not set" do
@@ -692,7 +690,7 @@ describe Action do
     end
 
     it "returns the value associated with a symbol in the context" do
-      @context.set :symbol, 123
+      context.set :symbol, 123
       a = action do
         parameter :test, :symbol
       end
@@ -721,7 +719,7 @@ describe Action do
           "#{get(:path)}/filename"
         end
       end
-      @context.set :path, "/tmp/my/path"
+      context.set :path, "/tmp/my/path"
       expect(a.attributes[:parameter][:test].value).to eq("/tmp/my/path/filename")
     end
 
