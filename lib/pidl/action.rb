@@ -29,18 +29,18 @@ module Pidl
   #
   class Action < PidlBase
 
-    def add_attribute name
+    def self.add_attribute name, default
       begin
-        attributes = send :instance_variable_get, :@attributes
+        attributes = class_variable_get :@@attributes
       rescue
       end
 
       if attributes
-        attributes << name
+        attributes[name] = default
       else
-        send :instance_variable_set, :@attributes, [ name ]
+        class_variable_set :@@attributes, { name => default }
       end
-    end 
+    end
 
     # -------------------------------------------------------------------------
     # :section: Action Factories
@@ -101,8 +101,8 @@ module Pidl
     def self.setter(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, nil
         send :define_method, name do |value|
-          add_attribute s
           instance_variable_set s, value
         end
       end
@@ -119,8 +119,8 @@ module Pidl
     def self.setterlazy(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, nil
         send :define_method, name do |value=nil, &block|
-          add_attribute s
 
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
@@ -159,8 +159,8 @@ module Pidl
     def self.vargsetter(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, []
         send :define_method, name do |*value|
-          add_attribute s
           instance_variable_set s, value
         end
       end
@@ -176,8 +176,8 @@ module Pidl
     def self.vargsetterlazy(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, []
         send :define_method, name do |*value, &block|
-          add_attribute s
           value = value.map { |v| get_lazy_wrapper v }
           # For some reason block_given? returns false here
           # so use respond_to? :call instead
@@ -214,8 +214,8 @@ module Pidl
       method_names.each do |name|
         s = "@#{name}".to_sym
         instance_variable_set s, []
+        self.add_attribute s, []
         send :define_method, name do |value|
-          add_attribute s
           v = instance_variable_get s
           if v.nil?
             instance_variable_set s, [ value ]
@@ -237,8 +237,8 @@ module Pidl
       method_names.each do |name|
         s = "@#{name}".to_sym
         instance_variable_set s, []
+        self.add_attribute s, []
         send :define_method, name do |value=nil, &block|
-          add_attribute s
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
             raise RuntimeError.new "Cannot accept value and block in lazy hashsetter"
@@ -287,8 +287,8 @@ module Pidl
     def self.hashsetter(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, Hash.new
         send :define_method, name do |key, value=true|
-          add_attribute s
           v = instance_variable_get s
           if v.nil?
             instance_variable_set s, { key => value }
@@ -309,8 +309,8 @@ module Pidl
     def self.hashsetterlazy(*method_names)
       method_names.each do |name|
         s = "@#{name}".to_sym
+        self.add_attribute s, Hash.new
         send :define_method, name do |key, value=nil, &block|
-          add_attribute s
 
           # Raise an error if both specified
           if not value.nil? and block.respond_to? :call
@@ -338,10 +338,20 @@ module Pidl
 
     # See Pidl::PidlBase::new
     def initialize(name, context, flags = {}, &block)
+      name ||= self.class.name
       @action = nil
       @on_error = :raise
       @exit_code = nil
-      @attributes = []
+      begin
+        attrs = self.class.class_variable_get(:@@attributes)
+      rescue
+        attrs = {}
+      end
+      attrs.each { |k,v|
+        if not instance_variable_get(k)
+          instance_variable_set k, (v ? v.dup : v)
+        end
+      }
       super
     end
 
@@ -351,8 +361,9 @@ module Pidl
     # attributes as part of this call
     #
     def attributes evaluate=false
+      attributes = self.class.class_variable_get(:@@attributes) || Hash.new
       Hash[
-        @attributes.map { |s|
+        attributes.keys.map { |s|
           v = instance_variable_get s
           v = v.value if evaluate and v.is_a? Pidl::Promise
           k = s.to_s.sub(/^@/, '').to_sym

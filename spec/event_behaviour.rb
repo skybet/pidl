@@ -13,13 +13,13 @@ shared_examples_for "EventEmitter" do
       let(:probe) { lambda {} }
 
       it "receives an event if the listener is a block" do
-        probe.should_receive(:call).with(:test)
+        expect(probe).to receive(:call).with(:test)
         subject.on :test, &probe
         subject.emit :test
       end
 
       it "receives an event if the listener is a lambda" do
-        probe.should_receive(:call).with(:test)
+        expect(probe).to receive(:call).with(:test)
         subject.on :test, probe
         subject.emit :test
       end
@@ -31,7 +31,7 @@ shared_examples_for "EventEmitter" do
       end
 
       it "sends parameters via emit" do
-        probe.should_receive(:call).with(:test, 'a', 1)
+        expect(probe).to receive(:call).with(:test, 'a', 1)
 
         subject.on :test, &probe
         subject.emit :test, 'a', 1
@@ -45,8 +45,8 @@ shared_examples_for "EventEmitter" do
       let(:probe2) { lambda{} }
 
       it "subscribes multiple listeners and all receive an event" do
-        probe1.should_receive(:call).with(:test)
-        probe2.should_receive(:call).with(:test)
+        expect(probe1).to receive(:call).with(:test)
+        expect(probe2).to receive(:call).with(:test)
 
         subject.on :test, &probe1
         subject.on :test, &probe2
@@ -54,8 +54,8 @@ shared_examples_for "EventEmitter" do
       end
 
       it "sends parameters to all subscribers via emit" do
-        probe1.should_receive(:call).with(:test, 'a', 1)
-        probe2.should_receive(:call).with(:test, 'a', 1)
+        expect(probe1).to receive(:call).with(:test, 'a', 1)
+        expect(probe2).to receive(:call).with(:test, 'a', 1)
 
         subject.on :test, &probe1
         subject.on :test, &probe2
@@ -63,8 +63,8 @@ shared_examples_for "EventEmitter" do
       end
 
       it "unsubscribes on required" do
-        probe1.should_not_receive :call
-        probe2.should_receive :call
+        expect(probe1).not_to receive :call
+        expect(probe2).to receive :call
 
         subject.on :test, &probe1
         subject.on :test, &probe2
