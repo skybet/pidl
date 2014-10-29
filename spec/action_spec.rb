@@ -115,7 +115,7 @@ describe Action do
         })
       end
 
-      it "skips missed attributes" do
+      it "sets missed attributes to defaults" do
         a = action do
           action :test
           first "1st"
@@ -124,6 +124,7 @@ describe Action do
         expect(a.attributes).to eq({
           action: :test,
           first: '1st',
+          second: nil,
           third: '3rd'
         })
       end
@@ -316,9 +317,9 @@ describe Action do
       VargSetterAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty array if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq([])
     end
 
     it "returns a scalar value in an array" do
@@ -378,9 +379,9 @@ describe Action do
       VargSetterLazyAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty array if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq([])
     end
 
     it "returns a scalar value" do
@@ -463,9 +464,9 @@ describe Action do
       ArraySetterAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty array if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq([])
     end
 
     it "returns a scalar value" do
@@ -519,9 +520,9 @@ describe Action do
       ArraySetterLazyAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty array if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq([])
     end
 
     it "returns a scalar value" do
@@ -596,9 +597,9 @@ describe Action do
       HashSetterAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty hash if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq({})
     end
 
     it "returns a scalar value" do
@@ -660,9 +661,9 @@ describe Action do
       HashSetterLazyAction.new :testname, context, &block
     end
 
-    it "returns nil if not set" do
+    it "returns empty hash if not set" do
       a = action do; end
-      expect(a.attributes[:parameter]).to eq(nil)
+      expect(a.attributes[:parameter]).to eq({})
     end
 
     it "returns a scalar value" do
