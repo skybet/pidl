@@ -5,7 +5,7 @@ shared_examples_for "EventEmitter" do
     it "raises an error if handler is not callable" do
       expect do
         subject.on :test, "not callable"
-      end.to raise_error
+      end.to raise_error(ArgumentError)
     end
 
     context "with a single listener" do
@@ -27,7 +27,7 @@ shared_examples_for "EventEmitter" do
       it "raises an error if both a lambda and block is provided" do
         expect do
           subject.on :test, probe do; end
-        end.to raise_error
+        end.to raise_error(ArgumentError)
       end
 
       it "sends parameters via emit" do
