@@ -9,8 +9,8 @@ RSpec::Core::RakeTask.new do |task|
 end
 
 RDoc::Task.new do |rdoc|
-  #rdoc.main = 'README.rdoc'
-  rdoc.rdoc_files.include('lib/pidl.rb', 'lib/pidl/*.rb')
+  rdoc.main = 'README.md'
+  rdoc.rdoc_files.include('README.md','lib/pidl.rb', 'lib/pidl/*.rb')
   rdoc.rdoc_dir = 'doc'
 end
 
