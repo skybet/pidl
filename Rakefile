@@ -4,8 +4,9 @@ require 'rdoc/task'
 
 task :default => [:spec]
 
-RSpec::Core::RakeTask.new do |task|
-  task.rspec_opts = ['--color']
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.fail_on_error = false
+  task.rspec_opts = ['--format RspecJunitFormatter --out tests/output.xml']
 end
 
 RDoc::Task.new do |rdoc|
