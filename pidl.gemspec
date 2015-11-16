@@ -6,7 +6,7 @@ require 'rubygems'
 
 Gem::Specification.new do |s|
   s.name          = 'pidl'
-  s.version       = ENV['VERSION_NUMBER'] || "0.1.#{ENV['BUILD_NUMBNER'] || 'dev'}"
+  s.version       = ENV['VERSION_NUMBER'] || "0.1.#{ENV['BUILD_NUMBER'] || 'dev'}"
   s.summary       = 'PIpeline Definition Language'
   s.description   = 'DSL for orchestration of parallel dependent pipelines of tasks'
   s.authors       = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Josh Mitchell']
