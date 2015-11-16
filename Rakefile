@@ -1,7 +1,6 @@
 require "bundler/gem_tasks"
 require 'rspec/core/rake_task'
 require 'rdoc/task'
-require 'gem_version'
 
 task :default => [:spec]
 

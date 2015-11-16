@@ -21,7 +21,7 @@ describe Action do
         a = action do
           on_error :explode
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
     end
 
     describe "#raise_on_error?" do
@@ -226,7 +226,7 @@ describe Action do
             1
           end
         end
-      end.to raise_error
+      end.to raise_error(ArgumentError)
     end
 
   end
@@ -302,7 +302,7 @@ describe Action do
             2
           end
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
     end
 
   end
@@ -505,7 +505,7 @@ describe Action do
             1
           end
         end
-      end.to raise_error
+      end.to raise_error(ArgumentError)
     end
 
   end
@@ -582,7 +582,7 @@ describe Action do
             2
           end
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
     end
 
   end
@@ -646,7 +646,7 @@ describe Action do
             1
           end
         end
-      end.to raise_error
+      end.to raise_error(ArgumentError)
     end
 
   end
@@ -731,7 +731,7 @@ describe Action do
             2
           end
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
     end
 
   end
