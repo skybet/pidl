@@ -1,4 +1,4 @@
-Copyright (c) 2014 Alice Kaerast
+Copyright (c) 2015 Sky Betting & Gaming
 
 MIT License
 

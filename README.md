@@ -14,8 +14,8 @@ simple constructs already created to get your first pipeline started.
 ``` ruby
 require 'pidl'
 
-context # Pidl::Context.new
-pipeline # Pidl::Pipeline.new 'My Pipeline', context do
+context = Pidl::Context.new
+pipeline = Pidl::Pipeline.new 'My Pipeline', context do
 
     task :first_task do
     # Put actions in here
