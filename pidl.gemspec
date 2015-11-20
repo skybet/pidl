@@ -9,12 +9,12 @@ Gem::Specification.new do |s|
   s.version       = ENV['VERSION_NUMBER'] || "0.1.#{ENV['BUILD_NUMBER'] || 'dev'}"
   s.summary       = 'PIpeline Definition Language'
   s.description   = 'DSL for orchestration of parallel dependent pipelines of tasks'
-  s.authors       = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Josh Mitchell']
+  s.authors       = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott','Josh Mitchell']
   s.email         = 'DL-SkyBetDataWarehouse@skybettingandgaming.com'
   s.files         = `git ls-files`.split($/)
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
-  s.homepage      = 'http://rubygems.org/gems/pidl'
+  s.homepage      = 'https://github.com/skybet/pidl'
   s.license       = 'MIT'
 
   s.add_development_dependency 'git'
