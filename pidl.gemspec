@@ -10,7 +10,6 @@ Gem::Specification.new do |s|
   s.summary       = 'PIpeline Definition Language'
   s.description   = 'DSL for orchestration of parallel dependent pipelines of tasks'
   s.authors       = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott','Josh Mitchell']
-  s.email         = 'DL-SkyBetDataWarehouse@skybettingandgaming.com'
   s.files         = `git ls-files`.split($/)
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
