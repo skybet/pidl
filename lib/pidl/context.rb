@@ -107,7 +107,7 @@ module Pidl
     def create_accessor_method name, value
       var_name = "@#{name}".to_sym
       instance_variable_set var_name, value
-      logger.debug { "Creating #{value.class.name} accessor [#{name}] for value [#{value unless value.to_s =~ /password/}]"}
+      logger.debug { "Creating #{value.class.name} accessor [#{name}] for value [#{value unless value.to_s.downcase =~ /password/}]"}
       if value.is_a? Hash
         define_singleton_method name do |key|
           v = instance_variable_get var_name
