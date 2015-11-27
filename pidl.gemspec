@@ -1,27 +1,23 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
-require 'rubygems'
-
 Gem::Specification.new do |s|
-  s.name          = 'pidl'
-  s.version       = ENV['VERSION_NUMBER'] || "0.1.#{ENV['BUILD_NUMBER'] || 'dev'}"
-  s.summary       = 'PIpeline Definition Language'
-  s.description   = 'DSL for orchestration of parallel dependent pipelines of tasks'
-  s.authors       = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott','Josh Mitchell']
-  s.files         = `git ls-files`.split($/)
-  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
-  s.require_paths = ["lib"]
-  s.homepage      = 'https://github.com/skybet/pidl'
-  s.license       = 'MIT'
+  s.name         = 'pidl'
+  s.version      = File.read('VERSION')
+  s.summary      = 'PIpeline Definition Language'
 
-  s.add_development_dependency 'git'
-  s.add_development_dependency 'bundler', '~> 1.3'
+  s.description  = 'DSL for orchestration of parallel dependent pipelines of tasks'
+  s.license      = 'MIT'
+  s.homepage     = 'https://github.com/skybet/pidl'
+  s.email        = 'careersinleeds@skybettingandgaming.com'
+
+  s.authors      = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott',
+  s.files        = Dir['[A-Z]*', 'lib/**/*.rb', 'spec/**/*']
+  s.rdoc_options = %w{ --main README.md }
+
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rspec_junit_formatter', '~> 0.2.3'
   s.add_development_dependency 'simplecov', '~> 0.10.0'
   s.add_development_dependency 'simplecov-rcov', '~> 0.2.3'
+  s.add_development_dependency 'version'
+
   s.add_dependency 'lazy'
 end
