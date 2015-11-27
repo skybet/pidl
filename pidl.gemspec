@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.homepage     = 'https://github.com/skybet/pidl'
   s.email        = 'careersinleeds@skybettingandgaming.com'
 
-  s.authors      = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott',
+  s.authors      = ['Craig Andrews', 'Alice Kaerast', 'Andrea McLaren', 'Darrell Taylor','Thomas Scott','Josh Mitchell']
   s.files        = Dir['[A-Z]*', 'lib/**/*.rb', 'spec/**/*']
   s.rdoc_options = %w{ --main README.md }
 
