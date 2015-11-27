@@ -43,7 +43,7 @@ end
 
 RSpec::Core::RakeTask.new(:spec, [:output, :verbose]) do |task, args|
   task.pattern = ['spec/**/*_spec.rb', 'spec/**/**/*_spec.rb']
-  task.rspec_opts = ['--format RspecJunitFormatter --out spec/reports/junit.xml'] if args[:output] == 'j
+  task.rspec_opts = ['--format RspecJunitFormatter --out spec/reports/junit.xml'] if args[:output] == 'junit' || args[:output] == 'coverage'
   task.verbose = false if args[:verbose] == 'quiet'
   ENV['COVERAGE']='true' if args[:output] == 'coverage'
 end
