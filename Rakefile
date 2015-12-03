@@ -38,7 +38,7 @@ Rake::RDocTask.new do |doc|
   doc.title    = "pidl #{Version.current}"
   doc.rdoc_dir = 'doc'
   doc.main     = 'README.md'
-  doc.rdoc_files.include('lib/**/*.rb')
+  doc.rdoc_files.include('README.md','lib/**/*.rb')
 end
 
 RSpec::Core::RakeTask.new(:spec, [:output, :verbose]) do |task, args|
