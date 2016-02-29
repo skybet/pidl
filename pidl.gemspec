@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.files        = Dir['[A-Z]*', 'lib/**/*.rb', 'spec/**/*']
   s.rdoc_options = %w{ --main README.md }
 
+  s.add_development_dependency 'bundler-audit', '~> 0.5.0'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rspec_junit_formatter', '~> 0.2.3'
