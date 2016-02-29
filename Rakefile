@@ -4,6 +4,7 @@ require 'rubygems'
 require 'rubygems/package_task'
 require 'rdoc/task'
 require 'rspec/core/rake_task'
+require 'bundler/audit/task'
 
 spec = Gem::Specification.new do |s|
   s.name         = 'pidl'
@@ -47,5 +48,7 @@ RSpec::Core::RakeTask.new(:spec, [:output, :verbose]) do |task, args|
   task.verbose = false if args[:verbose] == 'quiet'
   ENV['COVERAGE']='true' if args[:output] == 'coverage'
 end
+
+Bundler::Audit::Task.new
 
 task :default => [:spec]
